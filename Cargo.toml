@@ -1,0 +1,16 @@
+[package]
+
+name = "linked-list"
+version = "0.0.1"
+license = "MIT/Apache-2.0"
+description = "An alternative implementation of std::collections::LinkedList"
+
+authors = [
+    "Alexis Beingessner <a.beingessner@gmail.com>",
+]
+
+repository = "https://github.com/contain-rs/linked-list"
+homepage = "https://github.com/contain-rs/linked-list"
+documentation = "https://contain-rs.github.io/linked-list/linked-list"
+keywords = ["data-structures"]
+readme = "README.md"
