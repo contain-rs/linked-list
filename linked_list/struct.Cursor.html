@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `Cursor` struct in crate `linked-list`.">
+    <meta name="description" content="API documentation for the Rust `Cursor` struct in crate `linked_list`.">
     <meta name="keywords" content="rust, rustlang, rust-lang, Cursor">
 
-    <title>linked-list::Cursor - Rust</title>
+    <title>linked_list::Cursor - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../main.css">
 
@@ -26,7 +26,7 @@
 
     <section class="sidebar">
         
-        <p class='location'><a href='index.html'>linked-list</a></p><script>window.sidebarCurrent = {name: 'Cursor', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='index.html'>linked_list</a></p><script>window.sidebarCurrent = {name: 'Cursor', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </section>
 
     <nav class="sub">
@@ -41,9 +41,9 @@
     </nav>
 
     <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>linked-list</a>::<wbr><a class='struct' href=''>Cursor</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>linked_list</a>::<wbr><a class='struct' href=''>Cursor</a><wbr></span><span class='out-of-band'><span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-856' href='../src/linked-list/lib.rs.html#354-359'>[src]</a></span></h1>
+        </span><a id='src-856' href='../src/linked_list/lib.rs.html#354-359'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Cursor&lt;'a, T: 'a&gt; {
     // some fields omitted
 }</pre><div class='docblock'><p>A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
@@ -58,7 +58,7 @@ of the List.</p>
 <p>When created, cursors start between the ghost and the front of the list. That is, <code>next</code> will
 yield the front of the list, and <code>prev</code> will yield None. Calling <code>prev</code> again will yield
 the tail.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;'a, T&gt; <a class='struct' href='../linked-list/struct.Cursor.html' title='linked-list::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h3><div class='impl-items'><h4 id='method.reset' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.reset' class='fnname'>reset</a>(&amp;mut self)</code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl&lt;'a, T&gt; <a class='struct' href='../linked_list/struct.Cursor.html' title='linked_list::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h3><div class='impl-items'><h4 id='method.reset' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.reset' class='fnname'>reset</a>(&amp;mut self)</code></h4>
 <div class='docblock'><p>Resets the cursor to lie between the first and last element in the list.</p>
 </div><h4 id='method.next' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.next' class='fnname'>next</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;mut T&gt;</code></h4>
 <div class='docblock'><p>Gets the next element in the list.</p>
@@ -74,8 +74,8 @@ lie before it. Therefore, the new element will be yielded by the next call to <c
 </div><h4 id='method.remove' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.remove' class='fnname'>remove</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;T&gt;</code></h4>
 <div class='docblock'><p>Removes the next element in the list, without moving the cursor. Returns None if the list
 is empty, or if <code>next</code> is the ghost element</p>
-</div><h4 id='method.split' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.split' class='fnname'>split</a>(&amp;mut self) -&gt; <a class='struct' href='../linked-list/struct.LinkedList.html' title='linked-list::LinkedList'>LinkedList</a>&lt;T&gt;</code></h4>
-<h4 id='method.splice' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.splice' class='fnname'>splice</a>(&amp;mut self, other: &amp;mut <a class='struct' href='../linked-list/struct.LinkedList.html' title='linked-list::LinkedList'>LinkedList</a>&lt;T&gt;)</code></h4>
+</div><h4 id='method.split' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.split' class='fnname'>split</a>(&amp;mut self) -&gt; <a class='struct' href='../linked_list/struct.LinkedList.html' title='linked_list::LinkedList'>LinkedList</a>&lt;T&gt;</code></h4>
+<h4 id='method.splice' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.splice' class='fnname'>splice</a>(&amp;mut self, other: &amp;mut <a class='struct' href='../linked_list/struct.LinkedList.html' title='linked_list::LinkedList'>LinkedList</a>&lt;T&gt;)</code></h4>
 <div class='docblock'><p>Inserts the entire list&#39;s contents right after the cursor.</p>
 </div><h4 id='method.seek_forward' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.seek_forward' class='fnname'>seek_forward</a>(&amp;mut self, by: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>)</code></h4>
 <div class='docblock'><p>Calls <code>next</code> the specified number of times.</p>
@@ -121,7 +121,7 @@ is empty, or if <code>next</code> is the ghost element</p>
 
     <script>
         window.rootPath = "../";
-        window.currentCrate = "linked-list";
+        window.currentCrate = "linked_list";
         window.playgroundUrl = "";
     </script>
     <script src="../jquery.js"></script>

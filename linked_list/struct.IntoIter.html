@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `IntoIter` struct in crate `linked-list`.">
+    <meta name="description" content="API documentation for the Rust `IntoIter` struct in crate `linked_list`.">
     <meta name="keywords" content="rust, rustlang, rust-lang, IntoIter">
 
-    <title>linked-list::IntoIter - Rust</title>
+    <title>linked_list::IntoIter - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../main.css">
 
@@ -26,7 +26,7 @@
 
     <section class="sidebar">
         
-        <p class='location'><a href='index.html'>linked-list</a></p><script>window.sidebarCurrent = {name: 'IntoIter', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='index.html'>linked_list</a></p><script>window.sidebarCurrent = {name: 'IntoIter', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </section>
 
     <nav class="sub">
@@ -41,17 +41,17 @@
     </nav>
 
     <section id='main' class="content struct">
-<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>linked-list</a>::<wbr><a class='struct' href=''>IntoIter</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>linked_list</a>::<wbr><a class='struct' href=''>IntoIter</a><wbr></span><span class='out-of-band'><span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-1563' href='../src/linked-list/lib.rs.html#588-590'>[src]</a></span></h1>
+        </span><a id='src-1563' href='../src/linked_list/lib.rs.html#588-590'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct IntoIter&lt;T&gt; {
     // some fields omitted
 }</pre><div class='docblock'><p>An iterator over mutable references to the items of a <code>LinkedList</code>.</p>
-</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;A&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a> for <a class='struct' href='../linked-list/struct.IntoIter.html' title='linked-list::IntoIter'>IntoIter</a>&lt;A&gt;</code></h3><div class='impl-items'><h4 id='assoc_type.Item' class='type'><a class='stability Unmarked' title='No stability level'></a><code>type Item = A</code></h4>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;A&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a> for <a class='struct' href='../linked_list/struct.IntoIter.html' title='linked_list::IntoIter'>IntoIter</a>&lt;A&gt;</code></h3><div class='impl-items'><h4 id='assoc_type.Item' class='type'><a class='stability Unmarked' title='No stability level'></a><code>type Item = A</code></h4>
 <h4 id='method.next' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.next' class='fnname'>next</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;A&gt;</code></h4>
 <h4 id='method.size_hint' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.size_hint' class='fnname'>size_hint</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;)</a></code></h4>
-</div><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;A&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.DoubleEndedIterator.html' title='core::iter::DoubleEndedIterator'>DoubleEndedIterator</a> for <a class='struct' href='../linked-list/struct.IntoIter.html' title='linked-list::IntoIter'>IntoIter</a>&lt;A&gt;</code></h3><div class='impl-items'><h4 id='method.next_back' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.next_back' class='fnname'>next_back</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;A&gt;</code></h4>
-</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../linked-list/struct.IntoIter.html' title='linked-list::IntoIter'>IntoIter</a>&lt;T&gt;</code></h3><div class='impl-items'><h4 id='method.clone' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../linked-list/struct.IntoIter.html' title='linked-list::IntoIter'>IntoIter</a>&lt;T&gt;</code></h4>
+</div><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;A&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/iter/trait.DoubleEndedIterator.html' title='core::iter::DoubleEndedIterator'>DoubleEndedIterator</a> for <a class='struct' href='../linked_list/struct.IntoIter.html' title='linked_list::IntoIter'>IntoIter</a>&lt;A&gt;</code></h3><div class='impl-items'><h4 id='method.next_back' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.next_back' class='fnname'>next_back</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;A&gt;</code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><a class='stability Stable' title='Stable'></a><code>impl&lt;T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../linked_list/struct.IntoIter.html' title='linked_list::IntoIter'>IntoIter</a>&lt;T&gt;</code></h3><div class='impl-items'><h4 id='method.clone' class='method'><a class='stability Stable' title='Stable'></a><code>fn <a href='#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../linked_list/struct.IntoIter.html' title='linked_list::IntoIter'>IntoIter</a>&lt;T&gt;</code></h4>
 <h4 id='method.clone_from' class='tymethod'><a class='stability Unstable' title='Unstable: this function is rarely used'></a><code>fn <a href='#tymethod.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
 </div></section>
     <section id='search' class="content hidden"></section>
@@ -93,7 +93,7 @@
 
     <script>
         window.rootPath = "../";
-        window.currentCrate = "linked-list";
+        window.currentCrate = "linked_list";
         window.playgroundUrl = "";
     </script>
     <script src="../jquery.js"></script>
