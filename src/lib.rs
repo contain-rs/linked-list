@@ -11,9 +11,6 @@
 //! An alternative implementation of `std::collections::LinkedList`, featuring experimental
 //! Cursor-based APIs.
 
-#![feature(box_syntax)]
-#![feature(unsafe_destructor)]
-#![feature(box_patterns)]
 #![feature(core)]
 
 #![cfg_attr(test, feature(test, hash))]
@@ -143,7 +140,7 @@ impl<T> LinkedList<T> {
     /// Appends an element to the back of the list.
     pub fn push_back(&mut self, elem: T) {
         self.len += 1;
-        let mut node = box Node::new(elem);
+        let mut node = Box::new(Node::new(elem));
         // unconditionally make the new node the new tail
         let mut old_tail = mem::replace(&mut self.tail, Raw::some(&mut *node));
         match old_tail.as_mut() {
@@ -158,7 +155,7 @@ impl<T> LinkedList<T> {
     /// Appends an element to the front of the list.
     pub fn push_front(&mut self, elem: T) {
         self.len += 1;
-        let mut node = box Node::new(elem);
+        let mut node = Box::new(Node::new(elem));
         match self.head.take() {
             // List was empty, so the new node is the new tail
             None => self.tail = Raw::some(&mut *node),
@@ -178,12 +175,12 @@ impl<T> LinkedList<T> {
             match tail.prev.take().as_mut() {
                 // tail had no previous value, so the list only contained this node.
                 // So we have to take this node out by removing the head itself
-                None => self.head.take().map(|box node| node.elem),
+                None => self.head.take().map(|node| node.elem),
                 // tail had a previous value, so we need to make that the new tail
                 // and take the node out of its next field
                 Some(prev) => {
                     self.tail = Raw::some(prev);
-                    prev.next.take().map(|box node| node.elem)
+                    prev.next.take().map(|node| node.elem)
                 }
             }
         })
@@ -457,7 +454,7 @@ impl<'a, T> Cursor<'a, T> {
             } else {
                 // We're somewhere in the middle, splice in the new node
                 list.len += 1;
-                node.splice_next(box Node::new(elem));
+                node.splice_next(Box::new(Node::new(elem)));
             }
         }
     }
@@ -474,7 +471,7 @@ impl<'a, T> Cursor<'a, T> {
                 // No prev.next, we're at the ghost, yield None
                 None => None,
                 // We're somewhere in the middle, rip out prev.next
-                Some(box mut next) => {
+                Some(mut next) => {
                     list.len -= 1;
                     match next.next.take() {
                         // We were actually at the end of the list, so fix the list's tail
@@ -686,7 +683,6 @@ impl<A> DoubleEndedIterator for IntoIter<A> {
     fn next_back(&mut self) -> Option<A> { self.list.pop_back() }
 }
 
-#[unsafe_destructor]
 impl<T> Drop for LinkedList<T> {
     fn drop(&mut self) {
         self.clear()
@@ -800,20 +796,20 @@ mod tests {
         assert_eq!(m.pop_front(), None);
         assert_eq!(m.pop_back(), None);
         assert_eq!(m.pop_front(), None);
-        m.push_front(box 1);
-        assert_eq!(m.pop_front(), Some(box 1));
-        m.push_back(box 2);
-        m.push_back(box 3);
+        m.push_front(1);
+        assert_eq!(m.pop_front(), Some(1));
+        m.push_back(2);
+        m.push_back(3);
         assert_eq!(m.len(), 2);
-        assert_eq!(m.pop_front(), Some(box 2));
-        assert_eq!(m.pop_front(), Some(box 3));
+        assert_eq!(m.pop_front(), Some(2));
+        assert_eq!(m.pop_front(), Some(3));
         assert_eq!(m.len(), 0);
         assert_eq!(m.pop_front(), None);
-        m.push_back(box 1);
-        m.push_back(box 3);
-        m.push_back(box 5);
-        m.push_back(box 7);
-        assert_eq!(m.pop_front(), Some(box 1));
+        m.push_back(1);
+        m.push_back(3);
+        m.push_back(5);
+        m.push_back(7);
+        assert_eq!(m.pop_front(), Some(1));
 
         let mut n = LinkedList::new();
         n.push_front(2);
