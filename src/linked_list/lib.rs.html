@@ -1339,10 +1339,6 @@
 <span id="1297">1297</span>
 <span id="1298">1298</span>
 <span id="1299">1299</span>
-<span id="1300">1300</span>
-<span id="1301">1301</span>
-<span id="1302">1302</span>
-<span id="1303">1303</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 The Rust Project Developers. See the COPYRIGHT</span>
 <span class='comment'>// file at the top-level directory of this distribution and at</span>
@@ -1357,9 +1353,6 @@
 <span class='doccomment'>//! An alternative implementation of `std::collections::LinkedList`, featuring experimental</span>
 <span class='doccomment'>//! Cursor-based APIs.</span>
 
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>box_syntax</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>unsafe_destructor</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>box_patterns</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>)]</span>
 
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>cfg_attr</span>(<span class='ident'>test</span>, <span class='ident'>feature</span>(<span class='ident'>test</span>, <span class='ident'>hash</span>))]</span>
@@ -1489,7 +1482,7 @@
     <span class='doccomment'>/// Appends an element to the back of the list.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>push_back</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>elem</span>: <span class='ident'>T</span>) {
         <span class='self'>self</span>.<span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>node</span> <span class='op'>=</span> <span class='kw'>box</span> <span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>node</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>));
         <span class='comment'>// unconditionally make the new node the new tail</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>old_tail</span> <span class='op'>=</span> <span class='ident'>mem</span>::<span class='ident'>replace</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>tail</span>, <span class='ident'>Raw</span>::<span class='ident'>some</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>*</span><span class='ident'>node</span>));
         <span class='kw'>match</span> <span class='ident'>old_tail</span>.<span class='ident'>as_mut</span>() {
@@ -1504,7 +1497,7 @@
     <span class='doccomment'>/// Appends an element to the front of the list.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>push_front</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>elem</span>: <span class='ident'>T</span>) {
         <span class='self'>self</span>.<span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>node</span> <span class='op'>=</span> <span class='kw'>box</span> <span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>node</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>));
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>head</span>.<span class='ident'>take</span>() {
             <span class='comment'>// List was empty, so the new node is the new tail</span>
             <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>tail</span> <span class='op'>=</span> <span class='ident'>Raw</span>::<span class='ident'>some</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>*</span><span class='ident'>node</span>),
@@ -1524,12 +1517,12 @@
             <span class='kw'>match</span> <span class='ident'>tail</span>.<span class='ident'>prev</span>.<span class='ident'>take</span>().<span class='ident'>as_mut</span>() {
                 <span class='comment'>// tail had no previous value, so the list only contained this node.</span>
                 <span class='comment'>// So we have to take this node out by removing the head itself</span>
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>head</span>.<span class='ident'>take</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='kw'>box</span> <span class='ident'>node</span><span class='op'>|</span> <span class='ident'>node</span>.<span class='ident'>elem</span>),
+                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>head</span>.<span class='ident'>take</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>node</span><span class='op'>|</span> <span class='ident'>node</span>.<span class='ident'>elem</span>),
                 <span class='comment'>// tail had a previous value, so we need to make that the new tail</span>
                 <span class='comment'>// and take the node out of its next field</span>
                 <span class='prelude-val'>Some</span>(<span class='ident'>prev</span>) <span class='op'>=&gt;</span> {
                     <span class='self'>self</span>.<span class='ident'>tail</span> <span class='op'>=</span> <span class='ident'>Raw</span>::<span class='ident'>some</span>(<span class='ident'>prev</span>);
-                    <span class='ident'>prev</span>.<span class='ident'>next</span>.<span class='ident'>take</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='kw'>box</span> <span class='ident'>node</span><span class='op'>|</span> <span class='ident'>node</span>.<span class='ident'>elem</span>)
+                    <span class='ident'>prev</span>.<span class='ident'>next</span>.<span class='ident'>take</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>node</span><span class='op'>|</span> <span class='ident'>node</span>.<span class='ident'>elem</span>)
                 }
             }
         })
@@ -1803,7 +1796,7 @@
             } <span class='kw'>else</span> {
                 <span class='comment'>// We&#39;re somewhere in the middle, splice in the new node</span>
                 <span class='ident'>list</span>.<span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                <span class='ident'>node</span>.<span class='ident'>splice_next</span>(<span class='kw'>box</span> <span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>));
+                <span class='ident'>node</span>.<span class='ident'>splice_next</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>)));
             }
         }
     }
@@ -1820,7 +1813,7 @@
                 <span class='comment'>// No prev.next, we&#39;re at the ghost, yield None</span>
                 <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
                 <span class='comment'>// We&#39;re somewhere in the middle, rip out prev.next</span>
-                <span class='prelude-val'>Some</span>(<span class='kw'>box</span> <span class='kw-2'>mut</span> <span class='ident'>next</span>) <span class='op'>=&gt;</span> {
+                <span class='prelude-val'>Some</span>(<span class='kw-2'>mut</span> <span class='ident'>next</span>) <span class='op'>=&gt;</span> {
                     <span class='ident'>list</span>.<span class='ident'>len</span> <span class='op'>-=</span> <span class='number'>1</span>;
                     <span class='kw'>match</span> <span class='ident'>next</span>.<span class='ident'>next</span>.<span class='ident'>take</span>() {
                         <span class='comment'>// We were actually at the end of the list, so fix the list&#39;s tail</span>
@@ -2032,7 +2025,6 @@
     <span class='kw'>fn</span> <span class='ident'>next_back</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> { <span class='self'>self</span>.<span class='ident'>list</span>.<span class='ident'>pop_back</span>() }
 }
 
-<span class='attribute'>#[<span class='ident'>unsafe_destructor</span>]</span>
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Drop</span> <span class='kw'>for</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
     <span class='kw'>fn</span> <span class='ident'>drop</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
         <span class='self'>self</span>.<span class='ident'>clear</span>()
@@ -2146,20 +2138,20 @@
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>None</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_back</span>(), <span class='prelude-val'>None</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>None</span>);
-        <span class='ident'>m</span>.<span class='ident'>push_front</span>(<span class='kw'>box</span> <span class='number'>1</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='kw'>box</span> <span class='number'>1</span>));
-        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='kw'>box</span> <span class='number'>2</span>);
-        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='kw'>box</span> <span class='number'>3</span>);
+        <span class='ident'>m</span>.<span class='ident'>push_front</span>(<span class='number'>1</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='number'>1</span>));
+        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='number'>2</span>);
+        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='number'>3</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>len</span>(), <span class='number'>2</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='kw'>box</span> <span class='number'>2</span>));
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='kw'>box</span> <span class='number'>3</span>));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='number'>2</span>));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='number'>3</span>));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>None</span>);
-        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='kw'>box</span> <span class='number'>1</span>);
-        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='kw'>box</span> <span class='number'>3</span>);
-        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='kw'>box</span> <span class='number'>5</span>);
-        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='kw'>box</span> <span class='number'>7</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='kw'>box</span> <span class='number'>1</span>));
+        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='number'>1</span>);
+        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='number'>3</span>);
+        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='number'>5</span>);
+        <span class='ident'>m</span>.<span class='ident'>push_back</span>(<span class='number'>7</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>m</span>.<span class='ident'>pop_front</span>(), <span class='prelude-val'>Some</span>(<span class='number'>1</span>));
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>n</span> <span class='op'>=</span> <span class='ident'>LinkedList</span>::<span class='ident'>new</span>();
         <span class='ident'>n</span>.<span class='ident'>push_front</span>(<span class='number'>2</span>);
