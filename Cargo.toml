@@ -11,6 +11,6 @@ authors = [
 
 repository = "https://github.com/contain-rs/linked-list"
 homepage = "https://github.com/contain-rs/linked-list"
-documentation = "https://contain-rs.github.io/linked-list/linked-list"
+documentation = "https://contain-rs.github.io/linked-list/linked_list"
 keywords = ["data-structures"]
 readme = "README.md"
