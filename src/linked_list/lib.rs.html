@@ -1339,6 +1339,31 @@
 <span id="1297">1297</span>
 <span id="1298">1298</span>
 <span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
+<span id="1308">1308</span>
+<span id="1309">1309</span>
+<span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
+<span id="1317">1317</span>
+<span id="1318">1318</span>
+<span id="1319">1319</span>
+<span id="1320">1320</span>
+<span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 The Rust Project Developers. See the COPYRIGHT</span>
 <span class='comment'>// file at the top-level directory of this distribution and at</span>
@@ -1353,17 +1378,15 @@
 <span class='doccomment'>//! An alternative implementation of `std::collections::LinkedList`, featuring experimental</span>
 <span class='doccomment'>//! Cursor-based APIs.</span>
 
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>)]</span>
-
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>cfg_attr</span>(<span class='ident'>test</span>, <span class='ident'>feature</span>(<span class='ident'>test</span>, <span class='ident'>hash</span>))]</span>
-
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span> <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>test</span>;
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>cfg_attr</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;nightly&quot;</span>), <span class='ident'>feature</span>(<span class='ident'>test</span>))]</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;nightly&quot;</span>))]</span> <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>test</span>;
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;nightly&quot;</span>))]</span> <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Ordering</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>::{<span class='self'>self</span>, <span class='ident'>Debug</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>hash</span>::{<span class='ident'>Hash</span>, <span class='ident'>Hasher</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::{<span class='self'>self</span>, <span class='ident'>IntoIterator</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>marker</span>::{<span class='ident'>NoCopy</span>, <span class='ident'>PhantomData</span>};
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>marker</span>::<span class='ident'>PhantomData</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>ptr</span>, <span class='ident'>mem</span>};
 
 <span class='comment'>// FIXME(Gankro): Although the internal interface we have here is *safer* than std&#39;s LinkedList,</span>
@@ -1423,32 +1446,45 @@
 <span class='doccomment'>/// A non-owning link, based on a raw ptr.</span>
 <span class='kw'>struct</span> <span class='ident'>Raw</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
     <span class='ident'>ptr</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
-    <span class='ident'>marker</span>: <span class='ident'>NoCopy</span>,
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Raw</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
     <span class='doccomment'>/// Makes a null reference.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>none</span>() <span class='op'>-&gt;</span> <span class='ident'>Raw</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='ident'>Raw</span> { <span class='ident'>ptr</span>: <span class='ident'>ptr</span>::<span class='ident'>null_mut</span>(), <span class='ident'>marker</span>: <span class='ident'>NoCopy</span> }
+        <span class='ident'>Raw</span> { <span class='ident'>ptr</span>: <span class='ident'>ptr</span>::<span class='ident'>null_mut</span>() }
     }
 
     <span class='doccomment'>/// Makes a reference to the given node.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>some</span>(<span class='ident'>ptr</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Raw</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='ident'>Raw</span> { <span class='ident'>ptr</span>: <span class='ident'>ptr</span>, <span class='ident'>marker</span>: <span class='ident'>NoCopy</span> }
+        <span class='ident'>Raw</span> { <span class='ident'>ptr</span>: <span class='ident'>ptr</span> }
     }
 
     <span class='doccomment'>/// Converts the ref to an Option containing a reference.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>as_ref</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>unsafe</span> { <span class='self'>self</span>.<span class='ident'>ptr</span>.<span class='ident'>as_ref</span>() }
+        <span class='kw'>unsafe</span> {
+            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>ptr</span>.<span class='ident'>is_null</span>() {
+                <span class='prelude-val'>None</span>
+            } <span class='kw'>else</span> {
+                <span class='comment'>// 100% legit (no it&#39;s not)</span>
+                <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>)
+            }
+        }
     }
 
     <span class='doccomment'>/// Converts the ref to an Option containing a mutable reference.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>as_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Node</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>unsafe</span> { <span class='self'>self</span>.<span class='ident'>ptr</span>.<span class='ident'>as_mut</span>() }
+        <span class='kw'>unsafe</span> {
+            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>ptr</span>.<span class='ident'>is_null</span>() {
+                <span class='prelude-val'>None</span>
+            } <span class='kw'>else</span> {
+                <span class='comment'>// 100% legit (no it&#39;s not)</span>
+                <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>*</span><span class='self'>self</span>.<span class='ident'>ptr</span>)
+            }
+        }
     }
 
     <span class='doccomment'>/// Takes the reference out and nulls out this one.</span>
@@ -1461,7 +1497,7 @@
     <span class='doccomment'>/// We don&#39;t want these to be cloned in the immutable case.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>clone</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Raw</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='ident'>Raw</span> { <span class='ident'>ptr</span>: <span class='self'>self</span>.<span class='ident'>ptr</span>, <span class='ident'>marker</span>: <span class='ident'>NoCopy</span> }
+        <span class='ident'>Raw</span> { <span class='ident'>ptr</span>: <span class='self'>self</span>.<span class='ident'>ptr</span> }
     }
 }
 
@@ -1740,7 +1776,8 @@
                 <span class='prelude-val'>Some</span>(<span class='ident'>next</span>) <span class='op'>=&gt;</span> {
                     <span class='self'>self</span>.<span class='ident'>prev</span> <span class='op'>=</span> <span class='ident'>Raw</span>::<span class='ident'>some</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>*</span><span class='op'>*</span><span class='ident'>next</span>);
                     <span class='kw'>unsafe</span> {
-                        <span class='prelude-val'>Some</span>(<span class='ident'>mem</span>::<span class='ident'>copy_mut_lifetime</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>next</span>.<span class='ident'>elem</span>))
+                        <span class='comment'>// upgrade the lifetime</span>
+                        <span class='prelude-val'>Some</span>(<span class='ident'>mem</span>::<span class='ident'>transmute</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>next</span>.<span class='ident'>elem</span>))
                     }
                 }
             }
@@ -1761,7 +1798,8 @@
                 <span class='self'>self</span>.<span class='ident'>index</span> <span class='op'>-=</span> <span class='number'>1</span>;
                 <span class='self'>self</span>.<span class='ident'>prev</span> <span class='op'>=</span> <span class='ident'>prev</span>.<span class='ident'>prev</span>.<span class='ident'>clone</span>();
                  <span class='kw'>unsafe</span> {
-                    <span class='prelude-val'>Some</span>(<span class='ident'>mem</span>::<span class='ident'>copy_mut_lifetime</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>prev</span>.<span class='ident'>elem</span>))
+                    <span class='comment'>// upgrade the lifetime</span>
+                    <span class='prelude-val'>Some</span>(<span class='ident'>mem</span>::<span class='ident'>transmute</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>prev</span>.<span class='ident'>elem</span>))
                 }
             }
         }
@@ -2047,29 +2085,49 @@
 
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>: <span class='ident'>PartialEq</span><span class='op'>&gt;</span> <span class='ident'>PartialEq</span> <span class='kw'>for</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>eq</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='ident'>other</span>.<span class='ident'>len</span>() <span class='op'>&amp;&amp;</span>
-            <span class='ident'>iter</span>::<span class='ident'>order</span>::<span class='ident'>eq</span>(<span class='self'>self</span>.<span class='ident'>iter</span>(), <span class='ident'>other</span>.<span class='ident'>iter</span>())
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>ne</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>len</span>() <span class='op'>!=</span> <span class='ident'>other</span>.<span class='ident'>len</span>() <span class='op'>||</span>
-            <span class='ident'>iter</span>::<span class='ident'>order</span>::<span class='ident'>ne</span>(<span class='self'>self</span>.<span class='ident'>iter</span>(), <span class='ident'>other</span>.<span class='ident'>iter</span>())
+    <span class='kw'>fn</span> <span class='ident'>eq</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='kw'>Self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='ident'>other</span>.<span class='ident'>len</span>() {
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>iter</span>();
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>other</span>.<span class='ident'>iter</span>();
+            <span class='kw'>loop</span> {
+                <span class='kw'>match</span> (<span class='ident'>a</span>.<span class='ident'>next</span>(), <span class='ident'>b</span>.<span class='ident'>next</span>()) {
+                    (<span class='prelude-val'>Some</span>(<span class='ident'>x</span>), <span class='prelude-val'>Some</span>(<span class='ident'>y</span>)) <span class='op'>=&gt;</span> <span class='kw'>if</span> <span class='ident'>x</span> <span class='op'>!=</span> <span class='ident'>y</span> {
+                        <span class='kw'>return</span> <span class='boolval'>false</span>;
+                    },
+                    (<span class='prelude-val'>None</span>, <span class='prelude-val'>None</span>) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='boolval'>true</span>,
+                    _ <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='boolval'>false</span>
+                }
+            }
+        } <span class='kw'>else</span> {
+            <span class='boolval'>false</span>
+        }
     }
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>: <span class='ident'>Eq</span><span class='op'>&gt;</span> <span class='ident'>Eq</span> <span class='kw'>for</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {}
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>: <span class='ident'>PartialOrd</span><span class='op'>&gt;</span> <span class='ident'>PartialOrd</span> <span class='kw'>for</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Ordering</span><span class='op'>&gt;</span> {
-        <span class='ident'>iter</span>::<span class='ident'>order</span>::<span class='ident'>partial_cmp</span>(<span class='self'>self</span>.<span class='ident'>iter</span>(), <span class='ident'>other</span>.<span class='ident'>iter</span>())
+    <span class='kw'>fn</span> <span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='kw'>Self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Ordering</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>iter</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>other</span>.<span class='ident'>iter</span>();
+        <span class='kw'>loop</span> {
+            <span class='kw'>match</span> (<span class='ident'>a</span>.<span class='ident'>next</span>(), <span class='ident'>b</span>.<span class='ident'>next</span>()) {
+                (<span class='prelude-val'>Some</span>(<span class='ident'>x</span>), <span class='prelude-val'>Some</span>(<span class='ident'>y</span>)) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>x</span>.<span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>y</span>) {
+                    <span class='prelude-val'>Some</span>(<span class='ident'>Ordering</span>::<span class='ident'>Equal</span>) <span class='op'>=&gt;</span> {}
+                    <span class='ident'>otherwise</span> <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='ident'>otherwise</span>,
+                },
+                (<span class='prelude-val'>None</span>, <span class='prelude-val'>None</span>) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>Ordering</span>::<span class='ident'>Equal</span>),
+                (<span class='prelude-val'>None</span>, _) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>Ordering</span>::<span class='ident'>Less</span>),
+                (_, <span class='prelude-val'>None</span>) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>Ordering</span>::<span class='ident'>Greater</span>),
+            }
+        }
     }
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>: <span class='ident'>Ord</span><span class='op'>&gt;</span> <span class='ident'>Ord</span> <span class='kw'>for</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Ordering</span> {
-        <span class='ident'>iter</span>::<span class='ident'>order</span>::<span class='ident'>cmp</span>(<span class='self'>self</span>.<span class='ident'>iter</span>(), <span class='ident'>other</span>.<span class='ident'>iter</span>())
+    <span class='kw'>fn</span> <span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='kw'>Self</span>) <span class='op'>-&gt;</span> <span class='ident'>Ordering</span> {
+        <span class='self'>self</span>.<span class='ident'>partial_cmp</span>(<span class='ident'>other</span>).<span class='ident'>unwrap</span>()
     }
 }
 
@@ -2119,10 +2177,20 @@
     <span class='kw'>fn</span> <span class='ident'>into_iter</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>IntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> { <span class='self'>self</span>.<span class='ident'>into_iter</span>() }
 }
 
+
+
+
+
+
+
+
+
+
+
+
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span> {
     <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>LinkedList</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>hash</span>;
 
     <span class='kw'>fn</span> <span class='ident'>generate_test</span>() <span class='op'>-&gt;</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;</span> {
         <span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>0</span>,<span class='number'>1</span>,<span class='number'>2</span>,<span class='number'>3</span>,<span class='number'>4</span>,<span class='number'>5</span>,<span class='number'>6</span>])
@@ -2276,24 +2344,6 @@
         <span class='kw'>let</span> <span class='ident'>n</span> <span class='op'>=</span> <span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>2</span>,<span class='number'>3</span>,<span class='number'>4</span>]);
         <span class='kw'>let</span> <span class='ident'>m</span> <span class='op'>=</span> <span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>1</span>,<span class='number'>2</span>,<span class='number'>3</span>]);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>n</span> <span class='op'>!=</span> <span class='ident'>m</span>);
-    }
-
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>test_hash</span>() {
-      <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span> <span class='op'>=</span> <span class='ident'>LinkedList</span>::<span class='ident'>new</span>();
-      <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>LinkedList</span>::<span class='ident'>new</span>();
-
-      <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>hash</span>::<span class='ident'>hash</span>::<span class='op'>&lt;</span>_, <span class='ident'>hash</span>::<span class='ident'>SipHasher</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>x</span>) <span class='op'>==</span> <span class='ident'>hash</span>::<span class='ident'>hash</span>::<span class='op'>&lt;</span>_, <span class='ident'>hash</span>::<span class='ident'>SipHasher</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>y</span>));
-
-      <span class='ident'>x</span>.<span class='ident'>push_back</span>(<span class='number'>1</span>);
-      <span class='ident'>x</span>.<span class='ident'>push_back</span>(<span class='number'>2</span>);
-      <span class='ident'>x</span>.<span class='ident'>push_back</span>(<span class='number'>3</span>);
-
-      <span class='ident'>y</span>.<span class='ident'>push_front</span>(<span class='number'>3</span>);
-      <span class='ident'>y</span>.<span class='ident'>push_front</span>(<span class='number'>2</span>);
-      <span class='ident'>y</span>.<span class='ident'>push_front</span>(<span class='number'>1</span>);
-
-      <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>hash</span>::<span class='ident'>hash</span>::<span class='op'>&lt;</span>_, <span class='ident'>hash</span>::<span class='ident'>SipHasher</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>x</span>) <span class='op'>==</span> <span class='ident'>hash</span>::<span class='ident'>hash</span>::<span class='op'>&lt;</span>_, <span class='ident'>hash</span>::<span class='ident'>SipHasher</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>y</span>));
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -2558,7 +2608,7 @@
 
 
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;nightly&quot;</span>))]</span>
 <span class='kw'>mod</span> <span class='ident'>bench</span>{
     <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>LinkedList</span>;
     <span class='kw'>use</span> <span class='ident'>test</span>;
@@ -2672,6 +2722,10 @@
                 <code>struct</code>, <code>enum</code>,
                 <code>trait</code>, <code>typedef</code> (or
                 <code>tdef</code>).
+            </p>
+            <p>
+                Search functions by type signature (e.g.
+                <code>vec -> usize</code>)
             </p>
         </div>
     </div>
