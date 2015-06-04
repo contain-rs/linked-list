@@ -14,3 +14,9 @@ homepage = "https://github.com/contain-rs/linked-list"
 documentation = "https://contain-rs.github.io/linked-list/linked_list"
 keywords = ["data-structures"]
 readme = "README.md"
+
+[dev-dependencies]
+rand = "*"
+
+[features]
+nightly = []
