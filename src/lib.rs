@@ -760,19 +760,7 @@ impl<A: PartialOrd> PartialOrd for LinkedList<A> {
 impl<A: Ord> Ord for LinkedList<A> {
     #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
-        let mut a = self.iter();
-        let mut b = other.iter();
-        loop {
-            match (a.next(), b.next()) {
-                (Some(x), Some(y)) => match x.cmp(&y) {
-                    Ordering::Equal => {}
-                    otherwise => return otherwise,
-                },
-                (None, None) => return Ordering::Equal,
-                (None, _) => return Ordering::Less,
-                (_, None) => return Ordering::Greater,
-            }
-        }
+        self.partial_cmp(other).unwrap()
     }
 }
 
