@@ -11,17 +11,15 @@
 //! An alternative implementation of `std::collections::LinkedList`, featuring experimental
 //! Cursor-based APIs.
 
-#![feature(core)]
-
-#![cfg_attr(test, feature(test, hash))]
-
-#[cfg(test)] extern crate test;
+#![cfg_attr(all(test, feature = "nightly"), feature(test))]
+#[cfg(all(test, feature = "nightly"))] extern crate test;
+#[cfg(all(test, feature = "nightly"))] extern crate rand;
 
 use std::cmp::Ordering;
 use std::fmt::{self, Debug};
 use std::hash::{Hash, Hasher};
 use std::iter::{self, IntoIterator};
-use std::marker::{NoCopy, PhantomData};
+use std::marker::PhantomData;
 use std::{ptr, mem};
 
 // FIXME(Gankro): Although the internal interface we have here is *safer* than std's LinkedList,
@@ -81,32 +79,45 @@ type Link<T> = Option<Box<Node<T>>>;
 /// A non-owning link, based on a raw ptr.
 struct Raw<T> {
     ptr: *mut Node<T>,
-    marker: NoCopy,
 }
 
 impl<T> Raw<T> {
     /// Makes a null reference.
     #[inline]
     fn none() -> Raw<T> {
-        Raw { ptr: ptr::null_mut(), marker: NoCopy }
+        Raw { ptr: ptr::null_mut() }
     }
 
     /// Makes a reference to the given node.
     #[inline]
     fn some(ptr: &mut Node<T>) -> Raw<T> {
-        Raw { ptr: ptr, marker: NoCopy }
+        Raw { ptr: ptr }
     }
 
     /// Converts the ref to an Option containing a reference.
     #[inline]
     fn as_ref(&self) -> Option<& Node<T>> {
-        unsafe { self.ptr.as_ref() }
+        unsafe {
+            if self.ptr.is_null() {
+                None
+            } else {
+                // 100% legit (no it's not)
+                Some(&*self.ptr)
+            }
+        }
     }
 
     /// Converts the ref to an Option containing a mutable reference.
     #[inline]
     fn as_mut(&mut self) -> Option<&mut Node<T>> {
-        unsafe { self.ptr.as_mut() }
+        unsafe {
+            if self.ptr.is_null() {
+                None
+            } else {
+                // 100% legit (no it's not)
+                Some(&mut *self.ptr)
+            }
+        }
     }
 
     /// Takes the reference out and nulls out this one.
@@ -119,7 +130,7 @@ impl<T> Raw<T> {
     /// We don't want these to be cloned in the immutable case.
     #[inline]
     fn clone(&mut self) -> Raw<T> {
-        Raw { ptr: self.ptr, marker: NoCopy }
+        Raw { ptr: self.ptr }
     }
 }
 
@@ -398,7 +409,8 @@ impl<'a, T> Cursor<'a, T> {
                 Some(next) => {
                     self.prev = Raw::some(&mut **next);
                     unsafe {
-                        Some(mem::copy_mut_lifetime(self, &mut next.elem))
+                        // upgrade the lifetime
+                        Some(mem::transmute(&mut next.elem))
                     }
                 }
             }
@@ -419,7 +431,8 @@ impl<'a, T> Cursor<'a, T> {
                 self.index -= 1;
                 self.prev = prev.prev.clone();
                  unsafe {
-                    Some(mem::copy_mut_lifetime(self, &mut prev.elem))
+                    // upgrade the lifetime
+                    Some(mem::transmute(&mut prev.elem))
                 }
             }
         }
@@ -705,29 +718,49 @@ impl<A> Extend<A> for LinkedList<A> {
 
 
 impl<A: PartialEq> PartialEq for LinkedList<A> {
-    fn eq(&self, other: &LinkedList<A>) -> bool {
-        self.len() == other.len() &&
-            iter::order::eq(self.iter(), other.iter())
-    }
-
-    fn ne(&self, other: &LinkedList<A>) -> bool {
-        self.len() != other.len() ||
-            iter::order::ne(self.iter(), other.iter())
+    fn eq(&self, other: &Self) -> bool {
+        if self.len() == other.len() {
+            let mut a = self.iter();
+            let mut b = other.iter();
+            loop {
+                match (a.next(), b.next()) {
+                    (Some(x), Some(y)) => if x != y {
+                        return false;
+                    },
+                    (None, None) => return true,
+                    _ => return false
+                }
+            }
+        } else {
+            false
+        }
     }
 }
 
 impl<A: Eq> Eq for LinkedList<A> {}
 
 impl<A: PartialOrd> PartialOrd for LinkedList<A> {
-    fn partial_cmp(&self, other: &LinkedList<A>) -> Option<Ordering> {
-        iter::order::partial_cmp(self.iter(), other.iter())
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let mut a = self.iter();
+        let mut b = other.iter();
+        loop {
+            match (a.next(), b.next()) {
+                (Some(x), Some(y)) => match x.partial_cmp(&y) {
+                    Some(Ordering::Equal) => {}
+                    otherwise => return otherwise,
+                },
+                (None, None) => return Some(Ordering::Equal),
+                (None, _) => return Some(Ordering::Less),
+                (_, None) => return Some(Ordering::Greater),
+            }
+        }
     }
 }
 
 impl<A: Ord> Ord for LinkedList<A> {
     #[inline]
-    fn cmp(&self, other: &LinkedList<A>) -> Ordering {
-        iter::order::cmp(self.iter(), other.iter())
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 
@@ -777,10 +810,20 @@ impl<T> IntoIterator for LinkedList<T> {
     fn into_iter(self) -> IntoIter<T> { self.into_iter() }
 }
 
+
+
+
+
+
+
+
+
+
+
+
 #[cfg(test)]
 mod tests {
     use super::LinkedList;
-    use std::hash;
 
     fn generate_test() -> LinkedList<i32> {
         list_from(&[0,1,2,3,4,5,6])
@@ -934,24 +977,6 @@ mod tests {
         let n = list_from(&[2,3,4]);
         let m = list_from(&[1,2,3]);
         assert!(n != m);
-    }
-
-    #[test]
-    fn test_hash() {
-      let mut x = LinkedList::new();
-      let mut y = LinkedList::new();
-
-      assert!(hash::hash::<_, hash::SipHasher>(&x) == hash::hash::<_, hash::SipHasher>(&y));
-
-      x.push_back(1);
-      x.push_back(2);
-      x.push_back(3);
-
-      y.push_front(3);
-      y.push_front(2);
-      y.push_front(1);
-
-      assert!(hash::hash::<_, hash::SipHasher>(&x) == hash::hash::<_, hash::SipHasher>(&y));
     }
 
     #[test]
@@ -1216,7 +1241,7 @@ mod tests {
 
 
 
-#[cfg(test)]
+#[cfg(all(test, feature = "nightly"))]
 mod bench{
     use super::LinkedList;
     use test;

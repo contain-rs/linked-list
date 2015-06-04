@@ -1,7 +1,7 @@
 [package]
 
 name = "linked-list"
-version = "0.0.2"
+version = "0.0.3"
 license = "MIT/Apache-2.0"
 description = "An alternative implementation of std::collections::LinkedList"
 
@@ -14,3 +14,9 @@ homepage = "https://github.com/contain-rs/linked-list"
 documentation = "https://contain-rs.github.io/linked-list/linked_list"
 keywords = ["data-structures"]
 readme = "README.md"
+
+[dev-dependencies]
+rand = "*"
+
+[features]
+nightly = []
