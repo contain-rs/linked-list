@@ -498,9 +498,9 @@ impl<'a, T> Cursor<'a, T> {
         }
     }
 
-    // Splits the list into two at the cursor's current position. This will return a new list
-    // consisting of everything after the cursor, with the original list retaining everything
-    // before. The cursor will then lie between the tail and the ghost.
+    /// Splits the list into two at the cursor's current position. This will return a new list
+    /// consisting of everything after the cursor, with the original list retaining everything
+    /// before. The cursor will then lie between the tail and the ghost.
     pub fn split(&mut self) -> LinkedList<T> {
         let Cursor{ref mut list, ref mut prev, index} = *self;
         let new_tail = prev.clone();
