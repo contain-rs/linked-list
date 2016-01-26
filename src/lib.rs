@@ -347,6 +347,16 @@ impl<T> LinkedList<T> {
 
 }
 
+impl<T> LinkedList<T> where T: Eq {
+    /// Removes the first occurrence of `value` or `None` if not found.
+    #[inline]
+    pub fn remove_eq(&mut self, value: &T) -> Option<T> {
+        let mut cursor = self.cursor();
+        cursor.seek_forward_to(value);
+        cursor.remove()
+    }
+}
+
 /// A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
 /// safely mutate the list during iteration. This is because the lifetime of its yielded
 /// references are tied to its own lifetime, instead of just the underlying list. This means
@@ -576,6 +586,19 @@ impl<'a, T> Cursor<'a, T> {
     }
 }
 
+impl<'a, T> Cursor<'a, T> where T: Eq {
+    /// Calls `next()` until `value` or end is reached.
+    #[inline]
+    pub fn seek_forward_to(&mut self, value: &T) {
+        while let Some(equal) = self.peek_next().map_or(None, |v| Some(*v == *value)) {
+            if equal {
+                return;
+            } else {
+                self.next();
+            }
+        }
+    }
+}
 
 /// An iterator over references to the items of a `LinkedList`.
 #[derive(Clone)]
@@ -1233,6 +1256,14 @@ mod tests {
         assert_eq!(&list1, &LinkedList::new());
         assert_eq!(list2.len(), 7);
         assert_eq!(list1.len(), 0);
+    }
+
+    #[test]
+    fn test_remove_eq() {
+        let mut list = list_from(&[3,4,5]);
+        let removed_value = list.remove_eq(&4);
+        assert_eq!(&list, &list_from(&[3,5]));
+        assert_eq!(removed_value, Some(4));
     }
 }
 
