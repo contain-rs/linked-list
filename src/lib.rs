@@ -336,12 +336,6 @@ impl<T> LinkedList<T> {
             phantom: PhantomData,
         }
     }
-
-    /// Consumes the list into an iterator yielding elements by value.
-    #[inline]
-    pub fn into_iter(self) -> IntoIter<T> {
-        IntoIter{list: self}
-    }
 }
 
 /// A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
@@ -789,7 +783,7 @@ impl<'a, T> IntoIterator for &'a mut LinkedList<T> {
 impl<T> IntoIterator for LinkedList<T> {
     type Item = T;
     type IntoIter = IntoIter<T>;
-    fn into_iter(self) -> IntoIter<T> { self.into_iter() }
+    fn into_iter(self) -> IntoIter<T> { IntoIter { list: self } }
 }
 
 unsafe impl<T: Send> Send for LinkedList<T> {}
