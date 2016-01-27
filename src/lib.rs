@@ -598,16 +598,16 @@ pub struct IntoIter<T> {
     list: LinkedList<T>
 }
 
-impl<'a, A> Clone for Iter<'a, A> {
+impl<'a, T> Clone for Iter<'a, T> {
     fn clone(&self) -> Self {
         Iter { ..*self }
     }
 }
 
-impl<'a, A> Iterator for Iter<'a, A> {
-    type Item = &'a A;
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
     #[inline]
-    fn next(&mut self) -> Option<&'a A> {
+    fn next(&mut self) -> Option<&'a T> {
         if self.nelem == 0 {
             return None;
         }
@@ -624,9 +624,9 @@ impl<'a, A> Iterator for Iter<'a, A> {
     }
 }
 
-impl<'a, A> DoubleEndedIterator for Iter<'a, A> {
+impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
     #[inline]
-    fn next_back(&mut self) -> Option<&'a A> {
+    fn next_back(&mut self) -> Option<&'a T> {
         if self.nelem == 0 {
             return None;
         }
@@ -638,12 +638,12 @@ impl<'a, A> DoubleEndedIterator for Iter<'a, A> {
     }
 }
 
-impl<'a, A> ExactSizeIterator for Iter<'a, A> {}
+impl<'a, T> ExactSizeIterator for Iter<'a, T> {}
 
-impl<'a, A> Iterator for IterMut<'a, A> {
-    type Item = &'a mut A;
+impl<'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
     #[inline]
-    fn next(&mut self) -> Option<&'a mut A> {
+    fn next(&mut self) -> Option<&'a mut T> {
         if self.nelem == 0 {
             return None;
         }
@@ -666,9 +666,9 @@ impl<'a, A> Iterator for IterMut<'a, A> {
     }
 }
 
-impl<'a, A> DoubleEndedIterator for IterMut<'a, A> {
+impl<'a, T> DoubleEndedIterator for IterMut<'a, T> {
     #[inline]
-    fn next_back(&mut self) -> Option<&'a mut A> {
+    fn next_back(&mut self) -> Option<&'a mut T> {
         if self.nelem == 0 {
             return None;
         }
@@ -683,12 +683,12 @@ impl<'a, A> DoubleEndedIterator for IterMut<'a, A> {
     }
 }
 
-impl<'a, A> ExactSizeIterator for IterMut<'a, A> {}
+impl<'a, T> ExactSizeIterator for IterMut<'a, T> {}
 
-impl<A> Iterator for IntoIter<A> {
-    type Item = A;
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
     #[inline]
-    fn next(&mut self) -> Option<A> { self.list.pop_front() }
+    fn next(&mut self) -> Option<T> { self.list.pop_front() }
 
     #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -696,9 +696,9 @@ impl<A> Iterator for IntoIter<A> {
     }
 }
 
-impl<A> DoubleEndedIterator for IntoIter<A> {
+impl<T> DoubleEndedIterator for IntoIter<T> {
     #[inline]
-    fn next_back(&mut self) -> Option<A> { self.list.pop_back() }
+    fn next_back(&mut self) -> Option<T> { self.list.pop_back() }
 }
 
 impl<T> Drop for LinkedList<T> {
@@ -707,22 +707,22 @@ impl<T> Drop for LinkedList<T> {
     }
 }
 
-impl<A> Default for LinkedList<A> {
+impl<T> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<A> iter::FromIterator<A> for LinkedList<A> {
-    fn from_iter<T: IntoIterator<Item=A>>(iter: T) -> LinkedList<A> {
+impl<T> iter::FromIterator<T> for LinkedList<T> {
+    fn from_iter<I: IntoIterator<Item=T>>(iter: I) -> LinkedList<T> {
         let mut ret = LinkedList::new();
         ret.extend(iter);
         ret
     }
 }
 
-impl<A> Extend<A> for LinkedList<A> {
-    fn extend<T: IntoIterator<Item=A>>(&mut self, iter: T) {
+impl<T> Extend<T> for LinkedList<T> {
+    fn extend<I: IntoIterator<Item=T>>(&mut self, iter: I) {
         for elt in iter { self.push_back(elt); }
     }
 }
@@ -733,34 +733,34 @@ impl<'a, T: 'a + Copy> Extend<&'a T> for LinkedList<T> {
     }
 }
 
-impl<A: PartialEq> PartialEq for LinkedList<A> {
+impl<T: PartialEq> PartialEq for LinkedList<T> {
     fn eq(&self, other: &Self) -> bool {
         self.len() == other.len() && self.iter().eq(other)
     }
 }
 
-impl<A: Eq> Eq for LinkedList<A> {}
+impl<T: Eq> Eq for LinkedList<T> {}
 
-impl<A: PartialOrd> PartialOrd for LinkedList<A> {
+impl<T: PartialOrd> PartialOrd for LinkedList<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.iter().partial_cmp(other)
     }
 }
 
-impl<A: Ord> Ord for LinkedList<A> {
+impl<T: Ord> Ord for LinkedList<T> {
     #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
         self.iter().cmp(other)
     }
 }
 
-impl<A: fmt::Debug> fmt::Debug for LinkedList<A> {
+impl<T: fmt::Debug> fmt::Debug for LinkedList<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_list().entries(self).finish()
     }
 }
 
-impl<A: Hash> Hash for LinkedList<A> {
+impl<T: Hash> Hash for LinkedList<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.len().hash(state);
         for elt in self.iter() {
