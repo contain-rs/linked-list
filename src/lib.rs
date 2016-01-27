@@ -16,9 +16,9 @@
 #[cfg(all(test, feature = "nightly"))] extern crate rand;
 
 use std::cmp::Ordering;
-use std::fmt::{self, Debug};
+use std::fmt;
 use std::hash::{Hash, Hasher};
-use std::iter::{self, IntoIterator};
+use std::iter;
 use std::marker::PhantomData;
 use std::{ptr, mem};
 
