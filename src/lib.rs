@@ -578,7 +578,6 @@ impl<'a, T> Cursor<'a, T> {
 
 
 /// An iterator over references to the items of a `LinkedList`.
-#[derive(Clone)]
 pub struct Iter<'a, T:'a> {
     head: &'a Link<T>,
     tail: &'a Raw<T>,
@@ -597,6 +596,12 @@ pub struct IterMut<'a, T:'a> {
 #[derive(Clone)]
 pub struct IntoIter<T> {
     list: LinkedList<T>
+}
+
+impl<'a, A> Clone for Iter<'a, A> {
+    fn clone(&self) -> Self {
+        Iter { ..*self }
+    }
 }
 
 impl<'a, A> Iterator for Iter<'a, A> {
