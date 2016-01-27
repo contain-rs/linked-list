@@ -719,21 +719,7 @@ impl<A> Extend<A> for LinkedList<A> {
 
 impl<A: PartialEq> PartialEq for LinkedList<A> {
     fn eq(&self, other: &Self) -> bool {
-        if self.len() == other.len() {
-            let mut a = self.iter();
-            let mut b = other.iter();
-            loop {
-                match (a.next(), b.next()) {
-                    (Some(x), Some(y)) => if x != y {
-                        return false;
-                    },
-                    (None, None) => return true,
-                    _ => return false
-                }
-            }
-        } else {
-            false
-        }
+        self.len() == other.len() && self.iter().eq(other)
     }
 }
 
@@ -741,26 +727,14 @@ impl<A: Eq> Eq for LinkedList<A> {}
 
 impl<A: PartialOrd> PartialOrd for LinkedList<A> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let mut a = self.iter();
-        let mut b = other.iter();
-        loop {
-            match (a.next(), b.next()) {
-                (Some(x), Some(y)) => match x.partial_cmp(&y) {
-                    Some(Ordering::Equal) => {}
-                    otherwise => return otherwise,
-                },
-                (None, None) => return Some(Ordering::Equal),
-                (None, _) => return Some(Ordering::Less),
-                (_, None) => return Some(Ordering::Greater),
-            }
-        }
+        self.iter().partial_cmp(other)
     }
 }
 
 impl<A: Ord> Ord for LinkedList<A> {
     #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        self.iter().cmp(other)
     }
 }
 
