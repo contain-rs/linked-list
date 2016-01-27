@@ -36,7 +36,7 @@ struct Node<T> {
 impl<T> Node<T> {
     /// Makes a node with the given element.
     #[inline]
-    fn new(elem: T) -> Node<T> {
+    fn new(elem: T) -> Self {
         Node {
             prev: Raw::none(),
             next: None,
@@ -46,7 +46,7 @@ impl<T> Node<T> {
 
     /// Joins two lists.
     #[inline]
-    fn link(&mut self, mut next: Box<Node<T>>) {
+    fn link(&mut self, mut next: Box<Self>) {
         next.prev = Raw::some(self);
         self.next = Some(next);
     }
@@ -54,7 +54,7 @@ impl<T> Node<T> {
     /// Makes the given node come after this one, appropriately setting all other links.
     /// Assuming that self has a `next`.
     #[inline]
-    fn splice_next(&mut self, mut next: Box<Node<T>>) {
+    fn splice_next(&mut self, mut next: Box<Self>) {
         let mut old_next = self.next.take();
         old_next.as_mut().map(|node| node.prev = Raw::some(&mut *next));
         next.prev = Raw::some(self);
@@ -64,7 +64,7 @@ impl<T> Node<T> {
 
     /// Takes the next node from this one, breaking the list into two correctly linked lists.
     #[inline]
-    fn take_next(&mut self) -> Option<Box<Node<T>>> {
+    fn take_next(&mut self) -> Option<Box<Self>> {
         let mut next = self.next.take();
         next.as_mut().map(|node| {
             node.prev = Raw::none();
@@ -84,13 +84,13 @@ struct Raw<T> {
 impl<T> Raw<T> {
     /// Makes a null reference.
     #[inline]
-    fn none() -> Raw<T> {
+    fn none() -> Self {
         Raw { ptr: ptr::null_mut() }
     }
 
     /// Makes a reference to the given node.
     #[inline]
-    fn some(ptr: &mut Node<T>) -> Raw<T> {
+    fn some(ptr: &mut Node<T>) -> Self {
         Raw { ptr: ptr }
     }
 
@@ -122,14 +122,14 @@ impl<T> Raw<T> {
 
     /// Takes the reference out and nulls out this one.
     #[inline]
-    fn take(&mut self) -> Raw<T> {
+    fn take(&mut self) -> Self {
         mem::replace(self, Raw::none())
     }
 
     /// Clones this reference. Note that mutability differs from standard clone.
     /// We don't want these to be cloned in the immutable case.
     #[inline]
-    fn clone(&mut self) -> Raw<T> {
+    fn clone(&mut self) -> Self {
         Raw { ptr: self.ptr }
     }
 }
@@ -144,7 +144,7 @@ pub struct LinkedList<T> {
 impl<T> LinkedList<T> {
     /// Makes a new LinkedList.
     #[inline]
-    pub fn new() -> LinkedList<T> {
+    pub fn new() -> Self {
         LinkedList { head: None, tail: Raw::none(), len: 0 }
     }
 
@@ -264,9 +264,9 @@ impl<T> LinkedList<T> {
 
     /// Splits the list into two lists at the given index. Returns the right side of the split.
     /// Returns an empty list if index is out of bounds.
-    pub fn split_at(&mut self, index: usize) -> LinkedList<T> {
+    pub fn split_at(&mut self, index: usize) -> Self {
         if index >= self.len() {
-            LinkedList::new()
+            Self::new()
         } else {
             let mut cursor = self.cursor();
             cursor.seek_forward(index);
@@ -275,14 +275,14 @@ impl<T> LinkedList<T> {
     }
 
     /// Appends the given list to the end of this one. The old list will be empty afterwards.
-    pub fn append(&mut self, other: &mut LinkedList<T>) {
+    pub fn append(&mut self, other: &mut Self) {
         let mut cursor = self.cursor();
         cursor.prev();
         cursor.splice(other);
     }
 
     /// Inserts the given list at the given index. The old list will be empty afterwards.
-    pub fn splice(&mut self, index: usize, other: &mut LinkedList<T>) {
+    pub fn splice(&mut self, index: usize, other: &mut Self) {
         let mut cursor = self.cursor();
         cursor.seek_forward(index);
         cursor.splice(other);
@@ -714,7 +714,7 @@ impl<T> Default for LinkedList<T> {
 }
 
 impl<T> iter::FromIterator<T> for LinkedList<T> {
-    fn from_iter<I: IntoIterator<Item=T>>(iter: I) -> LinkedList<T> {
+    fn from_iter<I: IntoIterator<Item=T>>(iter: I) -> Self {
         let mut ret = LinkedList::new();
         ret.extend(iter);
         ret
@@ -770,7 +770,7 @@ impl<T: Hash> Hash for LinkedList<T> {
 }
 
 impl<T: Clone> Clone for LinkedList<T> {
-    fn clone(&self) -> LinkedList<T> {
+    fn clone(&self) -> Self {
         self.iter().cloned().collect()
     }
 }
