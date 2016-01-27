@@ -707,6 +707,12 @@ impl<T> Drop for LinkedList<T> {
     }
 }
 
+impl<A> Default for LinkedList<A> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<A> iter::FromIterator<A> for LinkedList<A> {
     fn from_iter<T: IntoIterator<Item=A>>(iter: T) -> LinkedList<A> {
         let mut ret = LinkedList::new();
