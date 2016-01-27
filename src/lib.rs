@@ -66,9 +66,7 @@ impl<T> Node<T> {
     #[inline]
     fn take_next(&mut self) -> Option<Box<Self>> {
         let mut next = self.next.take();
-        next.as_mut().map(|node| {
-            node.prev = Raw::none();
-        });
+        next.as_mut().map(|node| node.prev = Raw::none());
         next
     }
 }
@@ -96,7 +94,7 @@ impl<T> Raw<T> {
 
     /// Converts the ref to an Option containing a reference.
     #[inline]
-    fn as_ref(&self) -> Option<& Node<T>> {
+    fn as_ref(&self) -> Option<&Node<T>> {
         unsafe {
             if self.ptr.is_null() {
                 None
@@ -320,18 +318,18 @@ impl<T> LinkedList<T> {
 
     /// Provides a forward iterator.
     #[inline]
-    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
-        Iter{nelem: self.len(), head: &self.head, tail: &self.tail}
+    pub fn iter(&self) -> Iter<T> {
+        Iter { nelem: self.len(), head: &self.head, tail: &self.tail }
     }
 
     /// Provides a forward iterator with mutable references.
     #[inline]
-    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T> {
+    pub fn iter_mut(&mut self) -> IterMut<T> {
         let head_raw = match self.head.as_mut() {
             Some(head) => Raw::some(&mut **head),
             None => Raw::none(),
         };
-        IterMut{
+        IterMut {
             nelem: self.len(),
             head: head_raw,
             tail: self.tail.clone(),
@@ -344,7 +342,6 @@ impl<T> LinkedList<T> {
     pub fn into_iter(self) -> IntoIter<T> {
         IntoIter{list: self}
     }
-
 }
 
 /// A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
@@ -385,20 +382,20 @@ impl<'a, T> Cursor<'a, T> {
         match self.prev.take().as_mut() {
             // We had no previous element; the cursor was sitting at the start position
             // Next element should be the head of the list
-            None => match self.list.head.as_mut() {
+            None => match self.list.head {
                 // No head. No elements.
                 None => {
                     self.index = 0;
                     None
                 }
                 // Got the head. Set it as prev and yield its element
-                Some(head) => {
+                Some(ref mut head) => {
                     self.prev = Raw::some(&mut **head);
                     Some(&mut head.elem)
                 }
             },
             // We had a previous element, so let's go to its next
-            Some(prev) => match prev.next.as_mut() {
+            Some(prev) => match prev.next {
                 // No next. We're back at the start point, null the prev and yield None
                 None => {
                     self.index = 0;
@@ -406,7 +403,7 @@ impl<'a, T> Cursor<'a, T> {
                     None
                 }
                 // Got a next. Set it as prev and yield its element
-                Some(next) => {
+                Some(ref mut next) => {
                     self.prev = Raw::some(&mut **next);
                     unsafe {
                         // upgrade the lifetime
@@ -440,7 +437,7 @@ impl<'a, T> Cursor<'a, T> {
 
     /// Gets the next element in the list, without moving the cursor head.
     pub fn peek_next(&mut self) -> Option<&mut T> {
-        let Cursor{ref mut list, ref mut prev, ..} = *self;
+        let Cursor { ref mut list, ref mut prev, .. } = *self;
         match prev.as_mut() {
             None => list.front_mut(),
             Some(prev) => prev.next.as_mut().map(|next| &mut next.elem),
@@ -456,7 +453,7 @@ impl<'a, T> Cursor<'a, T> {
     /// lie before it. Therefore, the new element will be yielded by the next call to `next`.
     pub fn insert(&mut self, elem: T) {
         // destructure so that we can mutate list while working with prev
-        let Cursor{ref mut list, ref mut prev, ..} = *self;
+        let Cursor { ref mut list, ref mut prev, .. } = *self;
         match prev.as_mut() {
             // No prev, we're at the start of the list
             // Also covers empty list
@@ -475,7 +472,7 @@ impl<'a, T> Cursor<'a, T> {
     /// Removes the next element in the list, without moving the cursor. Returns None if the list
     /// is empty, or if `next` is the ghost element
     pub fn remove(&mut self) -> Option<T> {
-        let Cursor{ref mut list, ref mut prev, ..} = *self;
+        let Cursor { ref mut list, ref mut prev, .. } = *self;
         match prev.as_mut() {
             // No prev, we're at the start of the list
             // Also covers empty list
@@ -502,7 +499,7 @@ impl<'a, T> Cursor<'a, T> {
     /// consisting of everything after the cursor, with the original list retaining everything
     /// before. The cursor will then lie between the tail and the ghost.
     pub fn split(&mut self) -> LinkedList<T> {
-        let Cursor{ref mut list, ref mut prev, index} = *self;
+        let Cursor { ref mut list, ref mut prev, index } = *self;
         let new_tail = prev.clone();
         let len = list.len();
         match prev.as_mut() {
@@ -532,7 +529,7 @@ impl<'a, T> Cursor<'a, T> {
         other.len = 0;
         let mut head = other.head.take();
         let mut tail = other.tail.take();
-        let Cursor{ref mut list, ref mut prev, ..} = *self;
+        let Cursor { ref mut list, ref mut prev, .. } = *self;
 
         list.len += len;
         match prev.as_mut() {
@@ -576,16 +573,15 @@ impl<'a, T> Cursor<'a, T> {
     }
 }
 
-
 /// An iterator over references to the items of a `LinkedList`.
-pub struct Iter<'a, T:'a> {
+pub struct Iter<'a, T: 'a> {
     head: &'a Link<T>,
     tail: &'a Raw<T>,
     nelem: usize,
 }
 
 /// An iterator over mutable references to the items of a `LinkedList`.
-pub struct IterMut<'a, T:'a> {
+pub struct IterMut<'a, T: 'a> {
     head: Raw<T>,
     tail: Raw<T>,
     nelem: usize,
@@ -606,6 +602,7 @@ impl<'a, T> Clone for Iter<'a, T> {
 
 impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
+
     #[inline]
     fn next(&mut self) -> Option<&'a T> {
         if self.nelem == 0 {
@@ -642,6 +639,7 @@ impl<'a, T> ExactSizeIterator for Iter<'a, T> {}
 
 impl<'a, T> Iterator for IterMut<'a, T> {
     type Item = &'a mut T;
+
     #[inline]
     fn next(&mut self) -> Option<&'a mut T> {
         if self.nelem == 0 {
@@ -687,6 +685,7 @@ impl<'a, T> ExactSizeIterator for IterMut<'a, T> {}
 
 impl<T> Iterator for IntoIter<T> {
     type Item = T;
+
     #[inline]
     fn next(&mut self) -> Option<T> { self.list.pop_front() }
 
@@ -703,7 +702,7 @@ impl<T> DoubleEndedIterator for IntoIter<T> {
 
 impl<T> Drop for LinkedList<T> {
     fn drop(&mut self) {
-        self.clear()
+        self.clear();
     }
 }
 
@@ -826,15 +825,6 @@ fn assert_properties() {
     is_sync::<Cursor<i32>>();
 }
 
-
-
-
-
-
-
-
-
-
 #[cfg(test)]
 mod tests {
     use super::LinkedList;
@@ -887,7 +877,6 @@ mod tests {
         assert_eq!(n.pop_front(), Some(1));
     }
 
-
     #[test]
     fn test_iterator() {
         let m = generate_test();
@@ -903,7 +892,6 @@ mod tests {
         assert_eq!(it.size_hint(), (0, Some(0)));
         assert_eq!(it.next(), None);
     }
-
 
     #[test]
     fn test_iterator_double_end() {
@@ -1250,13 +1238,8 @@ mod tests {
     }
 }
 
-
-
-
-
-
 #[cfg(all(test, feature = "nightly"))]
-mod bench{
+mod bench {
     use super::LinkedList;
     use test;
 
@@ -1310,6 +1293,7 @@ mod bench{
             assert!(m.iter().count() == 128);
         })
     }
+
     #[bench]
     fn bench_iter_mut(b: &mut test::Bencher) {
         let v = &[0; 128];
@@ -1318,6 +1302,7 @@ mod bench{
             assert!(m.iter_mut().count() == 128);
         })
     }
+
     #[bench]
     fn bench_iter_rev(b: &mut test::Bencher) {
         let v = &[0; 128];
@@ -1326,6 +1311,7 @@ mod bench{
             assert!(m.iter().rev().count() == 128);
         })
     }
+
     #[bench]
     fn bench_iter_mut_rev(b: &mut test::Bencher) {
         let v = &[0; 128];
@@ -1334,5 +1320,4 @@ mod bench{
             assert!(m.iter_mut().rev().count() == 128);
         })
     }
-
 }
