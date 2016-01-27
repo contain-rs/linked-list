@@ -782,7 +782,38 @@ impl<T> IntoIterator for LinkedList<T> {
     fn into_iter(self) -> IntoIter<T> { self.into_iter() }
 }
 
+unsafe impl<T: Send> Send for LinkedList<T> {}
+unsafe impl<T: Sync> Sync for LinkedList<T> {}
 
+unsafe impl<'a, T: Send> Send for Iter<'a, T> {}
+unsafe impl<'a, T: Sync> Sync for Iter<'a, T> {}
+
+unsafe impl<'a, T: Send> Send for IterMut<'a, T> {}
+unsafe impl<'a, T: Sync> Sync for IterMut<'a, T> {}
+
+unsafe impl<'a, T: Send> Send for Cursor<'a, T> {}
+unsafe impl<'a, T: Sync> Sync for Cursor<'a, T> {}
+
+#[allow(dead_code)]
+fn assert_properties() {
+    fn is_send<T: Send>() {}
+    fn is_sync<T: Sync>() {}
+
+    is_send::<LinkedList<i32>>();
+    is_sync::<LinkedList<i32>>();
+
+    is_send::<IntoIter<i32>>();
+    is_sync::<IntoIter<i32>>();
+
+    is_send::<Iter<i32>>();
+    is_sync::<Iter<i32>>();
+
+    is_send::<IterMut<i32>>();
+    is_sync::<IterMut<i32>>();
+
+    is_send::<Cursor<i32>>();
+    is_sync::<Cursor<i32>>();
+}
 
 
 
