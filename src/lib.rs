@@ -276,6 +276,9 @@ impl<T> LinkedList<T> {
 
     /// Splits the list into two lists at the given index. Returns the right side of the split.
     /// Returns an empty list if index is out of bounds.
+    ///
+    /// This method is deprecated in favor of [`split_off`](#method.split_off) and will be removed
+    /// in a future release.
     pub fn split_at(&mut self, index: usize) -> Self {
         if index >= self.len() {
             Self::new()
@@ -284,6 +287,22 @@ impl<T> LinkedList<T> {
             cursor.seek_forward(index);
             cursor.split()
         }
+    }
+
+    /// Splits the list in two at the given index.
+    ///
+    /// After this method returns, `self` contains the elements that previously lay in the range
+    /// `[0, index)`, and the returned list contains the elements that previously lay in the range
+    /// `[index, len)`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given index is greater than the length of the list.
+    pub fn split_off(&mut self, index: usize) -> Self {
+        assert!(index <= self.len(), "Cannot split off at a nonexistent index");
+        let mut cursor = self.cursor();
+        cursor.seek_forward(index);
+        cursor.split()
     }
 
     /// Appends the given list to the end of this one. The old list will be empty afterwards.
@@ -1228,6 +1247,39 @@ mod tests {
         assert_eq!(&list5, &list_from(&[6,7]));
         assert_eq!(list3.len(), 2);
         assert_eq!(list5.len(), 2);
+    }
+
+    #[test]
+    fn test_split_off() {
+        let mut list2 = list_from(&[4,5,6,7]);
+
+        // split at front; basically just move the list
+        let mut list3 = list2.split_off(0);
+        assert_eq!(&list3, &list_from(&[4,5,6,7]));
+        assert_eq!(&list2, &LinkedList::new());
+        assert_eq!(list3.len(), 4);
+        assert_eq!(list2.len(), 0);
+
+        // split at end; convoluted LinkedList::new()
+        let list4 = list3.split_off(4);
+        assert_eq!(&list3, &list_from(&[4,5,6,7]));
+        assert_eq!(&list4, &LinkedList::new());
+        assert_eq!(list3.len(), 4);
+        assert_eq!(list4.len(), 0);
+
+        // split in middle
+        let list5 = list3.split_off(2);
+        assert_eq!(&list3, &list_from(&[4,5]));
+        assert_eq!(&list5, &list_from(&[6,7]));
+        assert_eq!(list3.len(), 2);
+        assert_eq!(list5.len(), 2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_split_off_oob() {
+        let mut list = list_from(&[1, 2, 3]);
+        list.split_off(4);
     }
 
     #[test]
