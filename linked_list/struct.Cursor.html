@@ -9,6 +9,7 @@
 
     <title>linked_list::Cursor - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
 
     
@@ -45,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-146' class='srclink' href='../src/linked_list/lib.rs.html#362-367' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-142' class='srclink' href='../src/linked_list/lib.rs.html#353-358' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Cursor&lt;'a, T: 'a&gt; {
     // some fields omitted
 }</pre><div class='docblock'><p>A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
@@ -86,7 +87,7 @@ before. The cursor will then lie between the tail and the ghost.</p>
 <div class='docblock'><p>Calls <code>next</code> the specified number of times.</p>
 </div><h4 id='method.seek_backward' class='method'><code>fn <a href='#method.seek_backward' class='fnname'>seek_backward</a>(&amp;mut self, by: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>)</code></h4>
 <div class='docblock'><p>Calls <code>prev</code> the specified number of times.</p>
-</div></div></section>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;'a, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> for <a class='struct' href='../linked_list/struct.Cursor.html' title='linked_list::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h3><div class='impl-items'></div><h3 class='impl'><code>impl&lt;'a, T: <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a>&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a> for <a class='struct' href='../linked_list/struct.Cursor.html' title='linked_list::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h3><div class='impl-items'></div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
