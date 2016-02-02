@@ -13,7 +13,6 @@
 
 #![cfg_attr(all(test, feature = "nightly"), feature(test))]
 #[cfg(all(test, feature = "nightly"))] extern crate test;
-#[cfg(all(test, feature = "nightly"))] extern crate rand;
 
 use std::cmp::Ordering;
 use std::fmt;
