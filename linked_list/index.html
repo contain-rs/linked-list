@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/linked_list/lib.rs.html#11-1321' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-0' class='srclink' href='../src/linked_list/lib.rs.html#11-1388' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>An alternative implementation of <code>std::collections::LinkedList</code>, featuring experimental
 Cursor-based APIs.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
@@ -55,10 +55,7 @@ Cursor-based APIs.</p>
                         <td><a class='struct' href='struct.Cursor.html'
                                title='linked_list::Cursor'>Cursor</a></td>
                         <td class='docblock short'>
-                             <p>A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
-safely mutate the list during iteration. This is because the lifetime of its yielded
-references are tied to its own lifetime, instead of just the underlying list. This means
-cursors cannot yield multiple elements at once.</p>
+                             <p>A cursor over a <code>LinkedList</code>.</p>
 
                         </td>
                     </tr>
@@ -67,7 +64,7 @@ cursors cannot yield multiple elements at once.</p>
                         <td><a class='struct' href='struct.IntoIter.html'
                                title='linked_list::IntoIter'>IntoIter</a></td>
                         <td class='docblock short'>
-                             <p>An iterator over mutable references to the items of a <code>LinkedList</code>.</p>
+                             <p>An iterator over the items of a <code>LinkedList</code>.</p>
 
                         </td>
                     </tr>

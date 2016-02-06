@@ -46,20 +46,22 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-142' class='srclink' href='../src/linked_list/lib.rs.html#353-358' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-147' class='srclink' href='../src/linked_list/lib.rs.html#387-392' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Cursor&lt;'a, T: 'a&gt; {
     // some fields omitted
-}</pre><div class='docblock'><p>A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
+}</pre><div class='docblock'><p>A cursor over a <code>LinkedList</code>.</p>
+
+<p>A <code>Cursor</code> is like an iterator, except that it can freely seek back-and-forth, and can
 safely mutate the list during iteration. This is because the lifetime of its yielded
-references are tied to its own lifetime, instead of just the underlying list. This means
+references is tied to its own lifetime, instead of just the underlying list. This means
 cursors cannot yield multiple elements at once.</p>
 
 <p>Cursors always rest between two elements in the list, and index in a logically circular way.
-To accomadate this, there is a &quot;ghost&quot; non-element that yields None between the head and tail
-of the List.</p>
+To accommodate this, there is a &quot;ghost&quot; non-element that yields <code>None</code> between the head and
+tail of the list.</p>
 
 <p>When created, cursors start between the ghost and the front of the list. That is, <code>next</code> will
-yield the front of the list, and <code>prev</code> will yield None. Calling <code>prev</code> again will yield
+yield the front of the list, and <code>prev</code> will yield <code>None</code>. Calling <code>prev</code> again will yield
 the tail.</p>
 </div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a, T&gt; <a class='struct' href='../linked_list/struct.Cursor.html' title='linked_list::Cursor'>Cursor</a>&lt;'a, T&gt;</code></h3><div class='impl-items'><h4 id='method.reset' class='method'><code>fn <a href='#method.reset' class='fnname'>reset</a>(&amp;mut self)</code></h4>
 <div class='docblock'><p>Resets the cursor to lie between the first and last element in the list.</p>

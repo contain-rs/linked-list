@@ -1362,6 +1362,73 @@
 <span id="1319">1319</span>
 <span id="1320">1320</span>
 <span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
+<span id="1325">1325</span>
+<span id="1326">1326</span>
+<span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
+<span id="1332">1332</span>
+<span id="1333">1333</span>
+<span id="1334">1334</span>
+<span id="1335">1335</span>
+<span id="1336">1336</span>
+<span id="1337">1337</span>
+<span id="1338">1338</span>
+<span id="1339">1339</span>
+<span id="1340">1340</span>
+<span id="1341">1341</span>
+<span id="1342">1342</span>
+<span id="1343">1343</span>
+<span id="1344">1344</span>
+<span id="1345">1345</span>
+<span id="1346">1346</span>
+<span id="1347">1347</span>
+<span id="1348">1348</span>
+<span id="1349">1349</span>
+<span id="1350">1350</span>
+<span id="1351">1351</span>
+<span id="1352">1352</span>
+<span id="1353">1353</span>
+<span id="1354">1354</span>
+<span id="1355">1355</span>
+<span id="1356">1356</span>
+<span id="1357">1357</span>
+<span id="1358">1358</span>
+<span id="1359">1359</span>
+<span id="1360">1360</span>
+<span id="1361">1361</span>
+<span id="1362">1362</span>
+<span id="1363">1363</span>
+<span id="1364">1364</span>
+<span id="1365">1365</span>
+<span id="1366">1366</span>
+<span id="1367">1367</span>
+<span id="1368">1368</span>
+<span id="1369">1369</span>
+<span id="1370">1370</span>
+<span id="1371">1371</span>
+<span id="1372">1372</span>
+<span id="1373">1373</span>
+<span id="1374">1374</span>
+<span id="1375">1375</span>
+<span id="1376">1376</span>
+<span id="1377">1377</span>
+<span id="1378">1378</span>
+<span id="1379">1379</span>
+<span id="1380">1380</span>
+<span id="1381">1381</span>
+<span id="1382">1382</span>
+<span id="1383">1383</span>
+<span id="1384">1384</span>
+<span id="1385">1385</span>
+<span id="1386">1386</span>
+<span id="1387">1387</span>
+<span id="1388">1388</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 The Rust Project Developers. See the COPYRIGHT</span>
 <span class='comment'>// file at the top-level directory of this distribution and at</span>
@@ -1378,7 +1445,6 @@
 
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>cfg_attr</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;nightly&quot;</span>), <span class='ident'>feature</span>(<span class='ident'>test</span>))]</span>
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;nightly&quot;</span>))]</span> <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>test</span>;
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;nightly&quot;</span>))]</span> <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Ordering</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
@@ -1505,13 +1571,13 @@
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Makes a new LinkedList.</span>
+    <span class='doccomment'>/// Returns an empty `LinkedList`.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
         <span class='ident'>LinkedList</span> { <span class='ident'>head</span>: <span class='prelude-val'>None</span>, <span class='ident'>tail</span>: <span class='ident'>Raw</span>::<span class='ident'>none</span>(), <span class='ident'>len</span>: <span class='number'>0</span> }
     }
 
-    <span class='doccomment'>/// Appends an element to the back of the list.</span>
+    <span class='doccomment'>/// Appends the given element to the back of the list.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>push_back</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>elem</span>: <span class='ident'>T</span>) {
         <span class='self'>self</span>.<span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>node</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>));
@@ -1526,7 +1592,7 @@
 
     }
 
-    <span class='doccomment'>/// Appends an element to the front of the list.</span>
+    <span class='doccomment'>/// Appends the given element to the front of the list.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>push_front</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>elem</span>: <span class='ident'>T</span>) {
         <span class='self'>self</span>.<span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>node</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Node</span>::<span class='ident'>new</span>(<span class='ident'>elem</span>));
@@ -1540,7 +1606,9 @@
         <span class='self'>self</span>.<span class='ident'>head</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>node</span>);
     }
 
-    <span class='doccomment'>/// Removes the element at back of the list. Returns None if the list is empty.</span>
+    <span class='doccomment'>/// Removes the element at the back of the list and returns it.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Returns `None` if the list was empty.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pop_back</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='comment'>// null out the list&#39;s tail pointer unconditionally</span>
         <span class='self'>self</span>.<span class='ident'>tail</span>.<span class='ident'>take</span>().<span class='ident'>as_mut</span>().<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>tail</span><span class='op'>|</span> {
@@ -1560,7 +1628,9 @@
         })
     }
 
-    <span class='doccomment'>/// Removes the element at front of the list. Returns None if the list is empty.</span>
+    <span class='doccomment'>/// Removes the element at the front of the list and returns it.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Returns `None` if the list was empty.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pop_front</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='comment'>// null out the list&#39;s head pointer unconditionally</span>
         <span class='self'>self</span>.<span class='ident'>head</span>.<span class='ident'>take</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='kw-2'>mut</span> <span class='ident'>head</span><span class='op'>|</span> {
@@ -1576,31 +1646,39 @@
         })
     }
 
-    <span class='doccomment'>/// Gets the element at the front of the list, or None if empty.</span>
+    <span class='doccomment'>/// Returns a reference to the element at the front of the list.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Returns `None` if the list is empty.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>front</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>head</span>.<span class='ident'>as_ref</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>node</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>node</span>.<span class='ident'>elem</span>)
     }
 
-    <span class='doccomment'>/// Gets the element at the back of the list, or None if empty.</span>
+    <span class='doccomment'>/// Returns a reference to the element at the back of the list.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Returns `None` if the list is empty.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>back</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>tail</span>.<span class='ident'>as_ref</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>node</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>node</span>.<span class='ident'>elem</span>)
     }
 
-    <span class='doccomment'>/// Gets the element at the front of the list mutably, or None if empty.</span>
+    <span class='doccomment'>/// Returns a mutable reference to the element at the front of the list.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Returns `None` if the list is empty.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>front_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>head</span>.<span class='ident'>as_mut</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>node</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>node</span>.<span class='ident'>elem</span>)
     }
 
-    <span class='doccomment'>/// Gets the element at the back of the list mutably, or None if empty.</span>
+    <span class='doccomment'>/// Returns a mutable reference to the element at the back of the list.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Returns `None` if the list is empty.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>back_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>tail</span>.<span class='ident'>as_mut</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>node</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>node</span>.<span class='ident'>elem</span>)
     }
 
-    <span class='doccomment'>/// Inserts an element at the given index.</span>
+    <span class='doccomment'>/// Inserts the given element into the list at the given index.</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// # Panics</span>
     <span class='doccomment'>///</span>
@@ -1613,7 +1691,9 @@
         <span class='ident'>cursor</span>.<span class='ident'>insert</span>(<span class='ident'>elem</span>);
     }
 
-    <span class='doccomment'>/// Removes the element at the given index. Returns None if the index is out of bounds.</span>
+    <span class='doccomment'>/// Removes the element at the given index and returns it.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Returns `None` if the index is greater than or equal to the length of the list.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>remove</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>index</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='kw'>if</span> <span class='ident'>index</span> <span class='op'>&gt;=</span> <span class='self'>self</span>.<span class='ident'>len</span>() {
@@ -1627,6 +1707,9 @@
 
     <span class='doccomment'>/// Splits the list into two lists at the given index. Returns the right side of the split.</span>
     <span class='doccomment'>/// Returns an empty list if index is out of bounds.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// This method is deprecated in favor of [`split_off`](#method.split_off) and will be removed</span>
+    <span class='doccomment'>/// in a future release.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>split_at</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>index</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
         <span class='kw'>if</span> <span class='ident'>index</span> <span class='op'>&gt;=</span> <span class='self'>self</span>.<span class='ident'>len</span>() {
             <span class='ident'>Self</span>::<span class='ident'>new</span>()
@@ -1635,6 +1718,22 @@
             <span class='ident'>cursor</span>.<span class='ident'>seek_forward</span>(<span class='ident'>index</span>);
             <span class='ident'>cursor</span>.<span class='ident'>split</span>()
         }
+    }
+
+    <span class='doccomment'>/// Splits the list in two at the given index.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// After this method returns, `self` contains the elements that previously lay in the range</span>
+    <span class='doccomment'>/// `[0, index)`, and the returned list contains the elements that previously lay in the range</span>
+    <span class='doccomment'>/// `[index, len)`.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// # Panics</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Panics if the given index is greater than the length of the list.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>split_off</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>index</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>index</span> <span class='op'>&lt;=</span> <span class='self'>self</span>.<span class='ident'>len</span>(), <span class='string'>&quot;Cannot split off at a nonexistent index&quot;</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cursor</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>cursor</span>();
+        <span class='ident'>cursor</span>.<span class='ident'>seek_forward</span>(<span class='ident'>index</span>);
+        <span class='ident'>cursor</span>.<span class='ident'>split</span>()
     }
 
     <span class='doccomment'>/// Appends the given list to the end of this one. The old list will be empty afterwards.</span>
@@ -1651,13 +1750,13 @@
         <span class='ident'>cursor</span>.<span class='ident'>splice</span>(<span class='ident'>other</span>);
     }
 
-    <span class='doccomment'>/// Gets the number of elements in the list.</span>
+    <span class='doccomment'>/// Returns the number of elements in the list.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>len</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
         <span class='self'>self</span>.<span class='ident'>len</span>
     }
 
-    <span class='doccomment'>/// Whether the list is empty.</span>
+    <span class='doccomment'>/// Checks if the list is empty.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_empty</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
         <span class='self'>self</span>.<span class='ident'>len</span> <span class='op'>==</span> <span class='number'>0</span>
@@ -1671,7 +1770,7 @@
         }
     }
 
-    <span class='doccomment'>/// Gets a cursor over the list.</span>
+    <span class='doccomment'>/// Returns a cursor over the list.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>cursor</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Cursor</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='ident'>Cursor</span> {
@@ -1681,13 +1780,13 @@
         }
     }
 
-    <span class='doccomment'>/// Provides a forward iterator.</span>
+    <span class='doccomment'>/// Returns a forward iterator that yields references to the list&#39;s elements.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='ident'>Iter</span> { <span class='ident'>nelem</span>: <span class='self'>self</span>.<span class='ident'>len</span>(), <span class='ident'>head</span>: <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>head</span>, <span class='ident'>tail</span>: <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>tail</span> }
     }
 
-    <span class='doccomment'>/// Provides a forward iterator with mutable references.</span>
+    <span class='doccomment'>/// Returns a forward iterator that yields mutable references to the list&#39;s elements.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>IterMut</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>head_raw</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>head</span>.<span class='ident'>as_mut</span>() {
@@ -1703,17 +1802,19 @@
     }
 }
 
-<span class='doccomment'>/// A Cursor is like an iterator, except that it can freely seek back-and-forth, and can</span>
+<span class='doccomment'>/// A cursor over a `LinkedList`.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// A `Cursor` is like an iterator, except that it can freely seek back-and-forth, and can</span>
 <span class='doccomment'>/// safely mutate the list during iteration. This is because the lifetime of its yielded</span>
-<span class='doccomment'>/// references are tied to its own lifetime, instead of just the underlying list. This means</span>
+<span class='doccomment'>/// references is tied to its own lifetime, instead of just the underlying list. This means</span>
 <span class='doccomment'>/// cursors cannot yield multiple elements at once.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// Cursors always rest between two elements in the list, and index in a logically circular way.</span>
-<span class='doccomment'>/// To accomadate this, there is a &quot;ghost&quot; non-element that yields None between the head and tail</span>
-<span class='doccomment'>/// of the List.</span>
+<span class='doccomment'>/// To accommodate this, there is a &quot;ghost&quot; non-element that yields `None` between the head and</span>
+<span class='doccomment'>/// tail of the list.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// When created, cursors start between the ghost and the front of the list. That is, `next` will</span>
-<span class='doccomment'>/// yield the front of the list, and `prev` will yield None. Calling `prev` again will yield</span>
+<span class='doccomment'>/// yield the front of the list, and `prev` will yield `None`. Calling `prev` again will yield</span>
 <span class='doccomment'>/// the tail.</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Cursor</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
     <span class='ident'>list</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
@@ -1947,7 +2048,7 @@
     <span class='ident'>phantom</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>T</span><span class='op'>&gt;</span>,
 }
 
-<span class='doccomment'>/// An iterator over mutable references to the items of a `LinkedList`.</span>
+<span class='doccomment'>/// An iterator over the items of a `LinkedList`.</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>IntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
     <span class='ident'>list</span>: <span class='ident'>LinkedList</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>
@@ -2577,6 +2678,39 @@
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>list5</span>, <span class='kw-2'>&amp;</span><span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>6</span>,<span class='number'>7</span>]));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list3</span>.<span class='ident'>len</span>(), <span class='number'>2</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list5</span>.<span class='ident'>len</span>(), <span class='number'>2</span>);
+    }
+
+    <span class='attribute'>#[<span class='ident'>test</span>]</span>
+    <span class='kw'>fn</span> <span class='ident'>test_split_off</span>() {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>list2</span> <span class='op'>=</span> <span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>4</span>,<span class='number'>5</span>,<span class='number'>6</span>,<span class='number'>7</span>]);
+
+        <span class='comment'>// split at front; basically just move the list</span>
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>list3</span> <span class='op'>=</span> <span class='ident'>list2</span>.<span class='ident'>split_off</span>(<span class='number'>0</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>list3</span>, <span class='kw-2'>&amp;</span><span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>4</span>,<span class='number'>5</span>,<span class='number'>6</span>,<span class='number'>7</span>]));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>list2</span>, <span class='kw-2'>&amp;</span><span class='ident'>LinkedList</span>::<span class='ident'>new</span>());
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list3</span>.<span class='ident'>len</span>(), <span class='number'>4</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list2</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
+
+        <span class='comment'>// split at end; convoluted LinkedList::new()</span>
+        <span class='kw'>let</span> <span class='ident'>list4</span> <span class='op'>=</span> <span class='ident'>list3</span>.<span class='ident'>split_off</span>(<span class='number'>4</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>list3</span>, <span class='kw-2'>&amp;</span><span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>4</span>,<span class='number'>5</span>,<span class='number'>6</span>,<span class='number'>7</span>]));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>list4</span>, <span class='kw-2'>&amp;</span><span class='ident'>LinkedList</span>::<span class='ident'>new</span>());
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list3</span>.<span class='ident'>len</span>(), <span class='number'>4</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list4</span>.<span class='ident'>len</span>(), <span class='number'>0</span>);
+
+        <span class='comment'>// split in middle</span>
+        <span class='kw'>let</span> <span class='ident'>list5</span> <span class='op'>=</span> <span class='ident'>list3</span>.<span class='ident'>split_off</span>(<span class='number'>2</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>list3</span>, <span class='kw-2'>&amp;</span><span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>4</span>,<span class='number'>5</span>]));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>list5</span>, <span class='kw-2'>&amp;</span><span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>6</span>,<span class='number'>7</span>]));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list3</span>.<span class='ident'>len</span>(), <span class='number'>2</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list5</span>.<span class='ident'>len</span>(), <span class='number'>2</span>);
+    }
+
+    <span class='attribute'>#[<span class='ident'>test</span>]</span>
+    <span class='attribute'>#[<span class='ident'>should_panic</span>]</span>
+    <span class='kw'>fn</span> <span class='ident'>test_split_off_oob</span>() {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>list</span> <span class='op'>=</span> <span class='ident'>list_from</span>(<span class='kw-2'>&amp;</span>[<span class='number'>1</span>, <span class='number'>2</span>, <span class='number'>3</span>]);
+        <span class='ident'>list</span>.<span class='ident'>split_off</span>(<span class='number'>4</span>);
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
