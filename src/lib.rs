@@ -13,7 +13,6 @@
 
 #![cfg_attr(all(test, feature = "nightly"), feature(test))]
 #[cfg(all(test, feature = "nightly"))] extern crate test;
-#[cfg(all(test, feature = "nightly"))] extern crate rand;
 
 use std::cmp::Ordering;
 use std::fmt;
@@ -140,13 +139,13 @@ pub struct LinkedList<T> {
 }
 
 impl<T> LinkedList<T> {
-    /// Makes a new LinkedList.
+    /// Returns an empty `LinkedList`.
     #[inline]
     pub fn new() -> Self {
         LinkedList { head: None, tail: Raw::none(), len: 0 }
     }
 
-    /// Appends an element to the back of the list.
+    /// Appends the given element to the back of the list.
     pub fn push_back(&mut self, elem: T) {
         self.len += 1;
         let mut node = Box::new(Node::new(elem));
@@ -161,7 +160,7 @@ impl<T> LinkedList<T> {
 
     }
 
-    /// Appends an element to the front of the list.
+    /// Appends the given element to the front of the list.
     pub fn push_front(&mut self, elem: T) {
         self.len += 1;
         let mut node = Box::new(Node::new(elem));
@@ -175,7 +174,9 @@ impl<T> LinkedList<T> {
         self.head = Some(node);
     }
 
-    /// Removes the element at back of the list. Returns None if the list is empty.
+    /// Removes the element at the back of the list and returns it.
+    ///
+    /// Returns `None` if the list was empty.
     pub fn pop_back(&mut self) -> Option<T> {
         // null out the list's tail pointer unconditionally
         self.tail.take().as_mut().and_then(|tail| {
@@ -195,7 +196,9 @@ impl<T> LinkedList<T> {
         })
     }
 
-    /// Removes the element at front of the list. Returns None if the list is empty.
+    /// Removes the element at the front of the list and returns it.
+    ///
+    /// Returns `None` if the list was empty.
     pub fn pop_front(&mut self) -> Option<T> {
         // null out the list's head pointer unconditionally
         self.head.take().map(|mut head| {
@@ -211,31 +214,39 @@ impl<T> LinkedList<T> {
         })
     }
 
-    /// Gets the element at the front of the list, or None if empty.
+    /// Returns a reference to the element at the front of the list.
+    ///
+    /// Returns `None` if the list is empty.
     #[inline]
     pub fn front(&self) -> Option<&T> {
         self.head.as_ref().map(|node| &node.elem)
     }
 
-    /// Gets the element at the back of the list, or None if empty.
+    /// Returns a reference to the element at the back of the list.
+    ///
+    /// Returns `None` if the list is empty.
     #[inline]
     pub fn back(&self) -> Option<&T> {
         self.tail.as_ref().map(|node| &node.elem)
     }
 
-    /// Gets the element at the front of the list mutably, or None if empty.
+    /// Returns a mutable reference to the element at the front of the list.
+    ///
+    /// Returns `None` if the list is empty.
     #[inline]
     pub fn front_mut(&mut self) -> Option<&mut T> {
         self.head.as_mut().map(|node| &mut node.elem)
     }
 
-    /// Gets the element at the back of the list mutably, or None if empty.
+    /// Returns a mutable reference to the element at the back of the list.
+    ///
+    /// Returns `None` if the list is empty.
     #[inline]
     pub fn back_mut(&mut self) -> Option<&mut T> {
         self.tail.as_mut().map(|node| &mut node.elem)
     }
 
-    /// Inserts an element at the given index.
+    /// Inserts the given element into the list at the given index.
     ///
     /// # Panics
     ///
@@ -248,7 +259,9 @@ impl<T> LinkedList<T> {
         cursor.insert(elem);
     }
 
-    /// Removes the element at the given index. Returns None if the index is out of bounds.
+    /// Removes the element at the given index and returns it.
+    ///
+    /// Returns `None` if the index is greater than or equal to the length of the list.
     #[inline]
     pub fn remove(&mut self, index: usize) -> Option<T> {
         if index >= self.len() {
@@ -262,6 +275,9 @@ impl<T> LinkedList<T> {
 
     /// Splits the list into two lists at the given index. Returns the right side of the split.
     /// Returns an empty list if index is out of bounds.
+    ///
+    /// This method is deprecated in favor of [`split_off`](#method.split_off) and will be removed
+    /// in a future release.
     pub fn split_at(&mut self, index: usize) -> Self {
         if index >= self.len() {
             Self::new()
@@ -270,6 +286,22 @@ impl<T> LinkedList<T> {
             cursor.seek_forward(index);
             cursor.split()
         }
+    }
+
+    /// Splits the list in two at the given index.
+    ///
+    /// After this method returns, `self` contains the elements that previously lay in the range
+    /// `[0, index)`, and the returned list contains the elements that previously lay in the range
+    /// `[index, len)`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the given index is greater than the length of the list.
+    pub fn split_off(&mut self, index: usize) -> Self {
+        assert!(index <= self.len(), "Cannot split off at a nonexistent index");
+        let mut cursor = self.cursor();
+        cursor.seek_forward(index);
+        cursor.split()
     }
 
     /// Appends the given list to the end of this one. The old list will be empty afterwards.
@@ -286,13 +318,13 @@ impl<T> LinkedList<T> {
         cursor.splice(other);
     }
 
-    /// Gets the number of elements in the list.
+    /// Returns the number of elements in the list.
     #[inline]
     pub fn len(&self) -> usize {
         self.len
     }
 
-    /// Whether the list is empty.
+    /// Checks if the list is empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.len == 0
@@ -306,7 +338,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    /// Gets a cursor over the list.
+    /// Returns a cursor over the list.
     #[inline]
     pub fn cursor(&mut self) -> Cursor<T> {
         Cursor {
@@ -316,13 +348,13 @@ impl<T> LinkedList<T> {
         }
     }
 
-    /// Provides a forward iterator.
+    /// Returns a forward iterator that yields references to the list's elements.
     #[inline]
     pub fn iter(&self) -> Iter<T> {
         Iter { nelem: self.len(), head: &self.head, tail: &self.tail }
     }
 
-    /// Provides a forward iterator with mutable references.
+    /// Returns a forward iterator that yields mutable references to the list's elements.
     #[inline]
     pub fn iter_mut(&mut self) -> IterMut<T> {
         let head_raw = match self.head.as_mut() {
@@ -338,17 +370,19 @@ impl<T> LinkedList<T> {
     }
 }
 
-/// A Cursor is like an iterator, except that it can freely seek back-and-forth, and can
+/// A cursor over a `LinkedList`.
+///
+/// A `Cursor` is like an iterator, except that it can freely seek back-and-forth, and can
 /// safely mutate the list during iteration. This is because the lifetime of its yielded
-/// references are tied to its own lifetime, instead of just the underlying list. This means
+/// references is tied to its own lifetime, instead of just the underlying list. This means
 /// cursors cannot yield multiple elements at once.
 ///
 /// Cursors always rest between two elements in the list, and index in a logically circular way.
-/// To accomadate this, there is a "ghost" non-element that yields None between the head and tail
-/// of the List.
+/// To accommodate this, there is a "ghost" non-element that yields `None` between the head and
+/// tail of the list.
 ///
 /// When created, cursors start between the ghost and the front of the list. That is, `next` will
-/// yield the front of the list, and `prev` will yield None. Calling `prev` again will yield
+/// yield the front of the list, and `prev` will yield `None`. Calling `prev` again will yield
 /// the tail.
 pub struct Cursor<'a, T: 'a> {
     list: &'a mut LinkedList<T>,
@@ -582,7 +616,7 @@ pub struct IterMut<'a, T: 'a> {
     phantom: PhantomData<&'a mut T>,
 }
 
-/// An iterator over mutable references to the items of a `LinkedList`.
+/// An iterator over the items of a `LinkedList`.
 #[derive(Clone)]
 pub struct IntoIter<T> {
     list: LinkedList<T>
@@ -1212,6 +1246,39 @@ mod tests {
         assert_eq!(&list5, &list_from(&[6,7]));
         assert_eq!(list3.len(), 2);
         assert_eq!(list5.len(), 2);
+    }
+
+    #[test]
+    fn test_split_off() {
+        let mut list2 = list_from(&[4,5,6,7]);
+
+        // split at front; basically just move the list
+        let mut list3 = list2.split_off(0);
+        assert_eq!(&list3, &list_from(&[4,5,6,7]));
+        assert_eq!(&list2, &LinkedList::new());
+        assert_eq!(list3.len(), 4);
+        assert_eq!(list2.len(), 0);
+
+        // split at end; convoluted LinkedList::new()
+        let list4 = list3.split_off(4);
+        assert_eq!(&list3, &list_from(&[4,5,6,7]));
+        assert_eq!(&list4, &LinkedList::new());
+        assert_eq!(list3.len(), 4);
+        assert_eq!(list4.len(), 0);
+
+        // split in middle
+        let list5 = list3.split_off(2);
+        assert_eq!(&list3, &list_from(&[4,5]));
+        assert_eq!(&list5, &list_from(&[6,7]));
+        assert_eq!(list3.len(), 2);
+        assert_eq!(list5.len(), 2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_split_off_oob() {
+        let mut list = list_from(&[1, 2, 3]);
+        list.split_off(4);
     }
 
     #[test]
