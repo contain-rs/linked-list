@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 use std::fmt::{self, Debug};
 use std::hash::{Hash, Hasher};
 use std::iter::FromIterator;
-use std::ptr::NonNull;
 use std::marker::PhantomData;
+use std::ptr::NonNull;
 
 pub struct LinkedList<T> {
     front: Link<T>,
@@ -17,7 +17,7 @@ type Link<T> = Option<NonNull<Node<T>>>;
 struct Node<T> {
     front: Link<T>,
     back: Link<T>,
-    elem: T, 
+    elem: T,
 }
 
 pub struct Iter<'a, T> {
@@ -67,7 +67,7 @@ impl<T> LinkedList<T> {
                 (*old.as_ptr()).front = Some(new);
                 (*new.as_ptr()).back = Some(old);
             } else {
-                // If there's no front, then we're the empty list and need 
+                // If there's no front, then we're the empty list and need
                 // to set the back too.
                 self.back = Some(new);
             }
@@ -90,7 +90,7 @@ impl<T> LinkedList<T> {
                 (*old.as_ptr()).back = Some(new);
                 (*new.as_ptr()).front = Some(old);
             } else {
-                // If there's no back, then we're the empty list and need 
+                // If there's no back, then we're the empty list and need
                 // to set the front too.
                 self.front = Some(new);
             }
@@ -153,27 +153,19 @@ impl<T> LinkedList<T> {
     }
 
     pub fn front(&self) -> Option<&T> {
-        unsafe {
-            self.front.map(|node| &(*node.as_ptr()).elem)
-        }
+        unsafe { self.front.map(|node| &(*node.as_ptr()).elem) }
     }
 
     pub fn front_mut(&mut self) -> Option<&mut T> {
-        unsafe {
-            self.front.map(|node| &mut (*node.as_ptr()).elem)
-        }
+        unsafe { self.front.map(|node| &mut (*node.as_ptr()).elem) }
     }
 
     pub fn back(&self) -> Option<&T> {
-        unsafe {
-            self.back.map(|node| &(*node.as_ptr()).elem)
-        }
+        unsafe { self.back.map(|node| &(*node.as_ptr()).elem) }
     }
 
     pub fn back_mut(&mut self) -> Option<&mut T> {
-        unsafe {
-            self.back.map(|node| &mut (*node.as_ptr()).elem)
-        }
+        unsafe { self.back.map(|node| &mut (*node.as_ptr()).elem) }
     }
 
     pub fn len(&self) -> usize {
@@ -186,12 +178,12 @@ impl<T> LinkedList<T> {
 
     pub fn clear(&mut self) {
         // Oh look it's drop again
-        while self.pop_front().is_some() { }
+        while self.pop_front().is_some() {}
     }
 
     pub fn iter(&self) -> Iter<T> {
-        Iter { 
-            front: self.front, 
+        Iter {
+            front: self.front,
             back: self.back,
             len: self.len,
             _boo: PhantomData,
@@ -199,8 +191,8 @@ impl<T> LinkedList<T> {
     }
 
     pub fn iter_mut(&mut self) -> IterMut<T> {
-        IterMut { 
-            front: self.front, 
+        IterMut {
+            front: self.front,
             back: self.back,
             len: self.len,
             _boo: PhantomData,
@@ -208,9 +200,9 @@ impl<T> LinkedList<T> {
     }
 
     pub fn cursor_mut(&mut self) -> CursorMut<T> {
-        CursorMut { 
-            list: self, 
-            cur: None, 
+        CursorMut {
+            list: self,
+            cur: None,
             index: None,
         }
     }
@@ -219,7 +211,7 @@ impl<T> LinkedList<T> {
 impl<T> Drop for LinkedList<T> {
     fn drop(&mut self) {
         // Pop until we have to stop
-        while self.pop_front().is_some() { }
+        while self.pop_front().is_some() {}
     }
 }
 
@@ -267,7 +259,7 @@ impl<T: PartialEq> PartialEq for LinkedList<T> {
     }
 }
 
-impl<T: Eq> Eq for LinkedList<T> { }
+impl<T: Eq> Eq for LinkedList<T> {}
 
 impl<T: PartialOrd> PartialOrd for LinkedList<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
@@ -401,9 +393,7 @@ impl<T> IntoIterator for LinkedList<T> {
     type Item = T;
 
     fn into_iter(self) -> Self::IntoIter {
-        IntoIter { 
-            list: self
-        }
+        IntoIter { list: self }
     }
 }
 
@@ -479,9 +469,7 @@ impl<'a, T> CursorMut<'a, T> {
     }
 
     pub fn current(&mut self) -> Option<&mut T> {
-        unsafe {
-            self.cur.map(|node| &mut (*node.as_ptr()).elem)
-        }
+        unsafe { self.cur.map(|node| &mut (*node.as_ptr()).elem) }
     }
 
     pub fn peek_next(&mut self) -> Option<&mut T> {
@@ -493,12 +481,12 @@ impl<'a, T> CursorMut<'a, T> {
                 // Ghost case, try to use the list's front pointer
                 self.list.front
             };
-    
+
             // Yield the element if the next node exists
             next.map(|node| &mut (*node.as_ptr()).elem)
         }
     }
-    
+
     pub fn peek_prev(&mut self) -> Option<&mut T> {
         unsafe {
             let prev = if let Some(cur) = self.cur {
@@ -508,7 +496,7 @@ impl<'a, T> CursorMut<'a, T> {
                 // Ghost case, try to use the list's back pointer
                 self.list.back
             };
-    
+
             // Yield the element if the prev node exists
             prev.map(|node| &mut (*node.as_ptr()).elem)
         }
@@ -520,15 +508,15 @@ impl<'a, T> CursorMut<'a, T> {
         //     list.front -> A <-> B <-> C <-> D <- list.back
         //                               ^
         //                              cur
-        // 
+        //
         //
         // And we want to produce this:
-        // 
+        //
         //     list.front -> C <-> D <- list.back
         //                   ^
         //                  cur
         //
-        // 
+        //
         //    return.front -> A <-> B <- return.back
         //
         if let Some(cur) = self.cur {
@@ -538,7 +526,7 @@ impl<'a, T> CursorMut<'a, T> {
                 let old_len = self.list.len;
                 let old_idx = self.index.unwrap();
                 let prev = (*cur.as_ptr()).front;
-                
+
                 // What self will become
                 let new_len = old_len - old_idx;
                 let new_front = self.cur;
@@ -582,15 +570,15 @@ impl<'a, T> CursorMut<'a, T> {
         //     list.front -> A <-> B <-> C <-> D <- list.back
         //                         ^
         //                        cur
-        // 
+        //
         //
         // And we want to produce this:
-        // 
+        //
         //     list.front -> A <-> B <- list.back
         //                         ^
         //                        cur
         //
-        // 
+        //
         //    return.front -> C <-> D <- return.back
         //
         if let Some(cur) = self.cur {
@@ -600,7 +588,7 @@ impl<'a, T> CursorMut<'a, T> {
                 let old_len = self.list.len;
                 let old_idx = self.index.unwrap();
                 let next = (*cur.as_ptr()).back;
-                
+
                 // What self will become
                 let new_len = old_idx + 1;
                 let new_back = self.cur;
@@ -695,9 +683,9 @@ impl<'a, T> CursorMut<'a, T> {
             self.list.len += input.len;
             // Not necessary but Polite To Do
             input.len = 0;
-            
+
             // Input dropped here
-        }        
+        }
     }
 
     pub fn splice_after(&mut self, mut input: LinkedList<T>) {
@@ -756,9 +744,9 @@ impl<'a, T> CursorMut<'a, T> {
             self.list.len += input.len;
             // Not necessary but Polite To Do
             input.len = 0;
-            
+
             // Input dropped here
-        }        
+        }
     }
 }
 
@@ -788,13 +776,19 @@ fn assert_properties() {
     is_send::<IterMut<i32>>();
     is_sync::<IterMut<i32>>();
 
-    fn linked_list_covariant<'a, T>(x: LinkedList<&'static T>) -> LinkedList<&'a T> { x }
-    fn iter_covariant<'i, 'a, T>(x: Iter<'i, &'static T>) -> Iter<'i, &'a T> { x }
-    fn into_iter_covariant<'a, T>(x: IntoIter<&'static T>) -> IntoIter<&'a T> { x }
+    fn linked_list_covariant<'a, T>(x: LinkedList<&'static T>) -> LinkedList<&'a T> {
+        x
+    }
+    fn iter_covariant<'i, 'a, T>(x: Iter<'i, &'static T>) -> Iter<'i, &'a T> {
+        x
+    }
+    fn into_iter_covariant<'a, T>(x: IntoIter<&'static T>) -> IntoIter<&'a T> {
+        x
+    }
 
     /// ```compile_fail,E0308
     /// use linked_list::IterMut;
-    /// 
+    ///
     /// fn iter_mut_covariant<'i, 'a, T>(x: IterMut<'i, &'static T>) -> IterMut<'i, &'a T> { x }
     /// ```
     fn iter_mut_invariant() {}
@@ -1044,7 +1038,8 @@ mod test {
         assert_eq!(format!("{:?}", list), "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]");
 
         let list: LinkedList<&str> = vec!["just", "one", "test", "more"]
-            .iter().copied()
+            .iter()
+            .copied()
             .collect();
         assert_eq!(format!("{:?}", list), r#"["just", "one", "test", "more"]"#);
     }
@@ -1121,15 +1116,21 @@ mod test {
         cursor.splice_before(Some(7).into_iter().collect());
         cursor.splice_after(Some(8).into_iter().collect());
         // check_links(&m);
-        assert_eq!(m.iter().cloned().collect::<Vec<_>>(), &[7, 1, 8, 2, 3, 4, 5, 6]);
+        assert_eq!(
+            m.iter().cloned().collect::<Vec<_>>(),
+            &[7, 1, 8, 2, 3, 4, 5, 6]
+        );
         let mut cursor = m.cursor_mut();
         cursor.move_next();
         cursor.move_prev();
         cursor.splice_before(Some(9).into_iter().collect());
         cursor.splice_after(Some(10).into_iter().collect());
         check_links(&m);
-        assert_eq!(m.iter().cloned().collect::<Vec<_>>(), &[10, 7, 1, 8, 2, 3, 4, 5, 6, 9]);
-        
+        assert_eq!(
+            m.iter().cloned().collect::<Vec<_>>(),
+            &[10, 7, 1, 8, 2, 3, 4, 5, 6, 9]
+        );
+
         /* remove_current not impl'd
         let mut cursor = m.cursor_mut();
         cursor.move_next();
@@ -1178,16 +1179,22 @@ mod test {
         cursor.move_next();
         cursor.move_next();
         let tmp = cursor.split_after();
-        assert_eq!(tmp.into_iter().collect::<Vec<_>>(), &[102, 103, 8, 2, 3, 4, 5, 6]);
+        assert_eq!(
+            tmp.into_iter().collect::<Vec<_>>(),
+            &[102, 103, 8, 2, 3, 4, 5, 6]
+        );
         check_links(&m);
-        assert_eq!(m.iter().cloned().collect::<Vec<_>>(), &[200, 201, 202, 203, 1, 100, 101]);
+        assert_eq!(
+            m.iter().cloned().collect::<Vec<_>>(),
+            &[200, 201, 202, 203, 1, 100, 101]
+        );
     }
 
     fn check_links<T: Eq + std::fmt::Debug>(list: &LinkedList<T>) {
         let from_front: Vec<_> = list.iter().collect();
         let from_back: Vec<_> = list.iter().rev().collect();
         let re_reved: Vec<_> = from_back.into_iter().rev().collect();
-    
+
         assert_eq!(from_front, re_reved);
     }
 }
