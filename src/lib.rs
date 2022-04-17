@@ -186,7 +186,7 @@ impl<T> LinkedList<T> {
 
     pub fn clear(&mut self) {
         // Oh look it's drop again
-        while let Some(_) = self.pop_front() { }
+        while self.pop_front().is_some() { }
     }
 
     pub fn iter(&self) -> Iter<T> {
@@ -207,12 +207,6 @@ impl<T> LinkedList<T> {
         }
     }
 
-    pub fn into_iter(self) -> IntoIter<T> {
-        IntoIter { 
-            list: self
-        }
-    }
-
     pub fn cursor_mut(&mut self) -> CursorMut<T> {
         CursorMut { 
             list: self, 
@@ -225,7 +219,7 @@ impl<T> LinkedList<T> {
 impl<T> Drop for LinkedList<T> {
     fn drop(&mut self) {
         // Pop until we have to stop
-        while let Some(_) = self.pop_front() { }
+        while self.pop_front().is_some() { }
     }
 }
 
@@ -270,10 +264,6 @@ impl<T: Debug> Debug for LinkedList<T> {
 impl<T: PartialEq> PartialEq for LinkedList<T> {
     fn eq(&self, other: &Self) -> bool {
         self.len() == other.len() && self.iter().eq(other)
-    }
-
-    fn ne(&self, other: &Self) -> bool {
-        self.len() != other.len() || self.iter().ne(other)
     }
 }
 
@@ -411,7 +401,9 @@ impl<T> IntoIterator for LinkedList<T> {
     type Item = T;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.into_iter()
+        IntoIter { 
+            list: self
+        }
     }
 }
 
