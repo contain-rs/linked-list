@@ -535,13 +535,15 @@ impl<'a, T> CursorMut<'a, T> {
 
                 // What the output will become
                 let output_len = old_len - new_len;
-                let output_front = self.list.front;
+                // We might be at the first node, in which case we don't want to set a new list.front but return an empty list.
+                let mut output_front = None;
                 let output_back = prev;
 
                 // Break the links between cur and prev
                 if let Some(prev) = prev {
                     (*cur.as_ptr()).front = None;
                     (*prev.as_ptr()).back = None;
+                    output_front = self.list.front
                 }
 
                 // Produce the result:
@@ -598,12 +600,14 @@ impl<'a, T> CursorMut<'a, T> {
                 // What the output will become
                 let output_len = old_len - new_len;
                 let output_front = next;
-                let output_back = self.list.back;
+                // We might be at the last node, in which case we don't want to set a new list.back but return an empty list.
+                let mut output_back = None;
 
                 // Break the links between cur and next
                 if let Some(next) = next {
                     (*cur.as_ptr()).back = None;
                     (*next.as_ptr()).front = None;
+                    output_back = self.list.back;
                 }
 
                 // Produce the result:
@@ -1196,5 +1200,41 @@ mod test {
         let re_reved: Vec<_> = from_back.into_iter().rev().collect();
 
         assert_eq!(from_front, re_reved);
+    }
+
+    #[test]
+    fn marker_split_before_first() {
+        let mut m: LinkedList<u32> = LinkedList::new();
+        m.extend([1, 2, 3, 4, 5, 6]);
+        let mut cursor = m.cursor_mut();
+        cursor.move_next();
+        assert_eq!(cursor.current(), Some(&mut 1));
+
+        let left = cursor.split_before();
+        assert!(left.is_empty());
+        assert!(left.front.is_none() && left.back.is_none());
+
+        assert_eq!(cursor.current(), Some(&mut 1));
+        assert_eq!(m.iter().cloned().collect::<Vec<_>>(), &[1, 2, 3, 4, 5, 6]);
+        assert_eq!(m.len(), 6);
+    }
+
+    #[test]
+    fn split_after_last() {
+        let mut m: LinkedList<u32> = LinkedList::new();
+        m.extend([1, 2, 3, 4, 5, 6]);
+        assert_eq!(m.iter().cloned().collect::<Vec<_>>(), &[1, 2, 3, 4, 5, 6]);
+        let mut cursor = m.cursor_mut();
+
+        cursor.move_prev();
+        assert_eq!(cursor.current(), Some(&mut 6));
+
+        let right = cursor.split_after();
+        assert!(right.is_empty());
+        assert!(right.front.is_none() && right.back.is_none());
+
+        assert_eq!(cursor.current(), Some(&mut 6));
+        assert_eq!(m.iter().cloned().collect::<Vec<_>>(), &[1, 2, 3, 4, 5, 6]);
+        assert_eq!(m.len(), 6);
     }
 }
