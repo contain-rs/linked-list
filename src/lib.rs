@@ -759,6 +759,9 @@ unsafe impl<'a, T: Sync> Sync for Iter<'a, T> {}
 unsafe impl<'a, T: Send> Send for IterMut<'a, T> {}
 unsafe impl<'a, T: Sync> Sync for IterMut<'a, T> {}
 
+unsafe impl<T: Send> Send for Node<T> {}
+unsafe impl<T: Sync> Sync for Node<T> {}
+
 #[allow(dead_code)]
 fn assert_properties() {
     fn is_send<T: Send>() {}
@@ -775,6 +778,9 @@ fn assert_properties() {
 
     is_send::<IterMut<i32>>();
     is_sync::<IterMut<i32>>();
+
+    is_send::<Node<i32>>();
+    is_sync::<Node<i32>>();
 
     fn linked_list_covariant<'a, T>(x: LinkedList<&'static T>) -> LinkedList<&'a T> {
         x
