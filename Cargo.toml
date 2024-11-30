@@ -2,18 +2,19 @@
 
 name = "linked-list"
 version = "0.0.3"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "An alternative implementation of std::collections::LinkedList"
 
 authors = [
     "Alexis Beingessner <a.beingessner@gmail.com>",
+    "Peter Blackson <pioczarn@gmail.com>",
 ]
+
+edition = "2021"
 
 repository = "https://github.com/contain-rs/linked-list"
 homepage = "https://github.com/contain-rs/linked-list"
-documentation = "https://contain-rs.github.io/linked-list/linked_list"
+documentation = "https://docs.rs/linked-list/latest/linked_list"
 keywords = ["data-structures"]
 readme = "README.md"
 
-[features]
-nightly = []
