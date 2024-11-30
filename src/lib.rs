@@ -1,3 +1,7 @@
+//! ### Description
+//!
+//! An alternative implementation of standard `LinkedList` featuring a prototype `Cursor`.
+
 use std::cmp::Ordering;
 use std::fmt::{self, Debug};
 use std::hash::{Hash, Hasher};
@@ -5,10 +9,16 @@ use std::iter::FromIterator;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
-pub struct LinkedList<T> {
+use allocator_api2::{
+    alloc::{Allocator, Global},
+    boxed::Box,
+};
+
+pub struct LinkedList<T, A: Allocator = Global> {
     front: Link<T>,
     back: Link<T>,
     len: usize,
+    alloc: A,
     _boo: PhantomData<T>,
 }
 
@@ -34,22 +44,29 @@ pub struct IterMut<'a, T> {
     _boo: PhantomData<&'a mut T>,
 }
 
-pub struct IntoIter<T> {
-    list: LinkedList<T>,
+pub struct IntoIter<T, A: Allocator = Global> {
+    list: LinkedList<T, A>,
 }
 
-pub struct CursorMut<'a, T> {
-    list: &'a mut LinkedList<T>,
+pub struct CursorMut<'a, T, A: Allocator = Global> {
+    list: &'a mut LinkedList<T, A>,
     cur: Link<T>,
     index: Option<usize>,
 }
 
 impl<T> LinkedList<T> {
     pub fn new() -> Self {
+        Self::new_in(Default::default())
+    }
+}
+
+impl<T, A: Allocator> LinkedList<T, A> {
+    pub fn new_in(alloc: A) -> Self {
         Self {
             front: None,
             back: None,
             len: 0,
+            alloc,
             _boo: PhantomData,
         }
     }
@@ -57,11 +74,14 @@ impl<T> LinkedList<T> {
     pub fn push_front(&mut self, elem: T) {
         // SAFETY: it's a linked-list, what do you want?
         unsafe {
-            let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
-                front: None,
-                back: None,
-                elem,
-            })));
+            let new = NonNull::new_unchecked(Box::into_raw(Box::new_in(
+                Node {
+                    front: None,
+                    back: None,
+                    elem,
+                },
+                &self.alloc,
+            )));
             if let Some(old) = self.front {
                 // Put the new front before the old one
                 (*old.as_ptr()).front = Some(new);
@@ -80,11 +100,14 @@ impl<T> LinkedList<T> {
     pub fn push_back(&mut self, elem: T) {
         // SAFETY: it's a linked-list, what do you want?
         unsafe {
-            let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
-                back: None,
-                front: None,
-                elem,
-            })));
+            let new = NonNull::new_unchecked(Box::into_raw(Box::new_in(
+                Node {
+                    back: None,
+                    front: None,
+                    elem,
+                },
+                &self.alloc,
+            )));
             if let Some(old) = self.back {
                 // Put the new back before the old one
                 (*old.as_ptr()).back = Some(new);
@@ -106,11 +129,12 @@ impl<T> LinkedList<T> {
             self.front.map(|node| {
                 // Bring the Box back to life so we can move out its value and
                 // Drop it (Box continues to magically understand this for us).
-                let boxed_node = Box::from_raw(node.as_ptr());
-                let result = boxed_node.elem;
+                let boxed_node = Box::from_raw_in(node.as_ptr(), &self.alloc);
+                let node = Box::into_inner(boxed_node);
+                let result = node.elem;
 
                 // Make the next node into the new front.
-                self.front = boxed_node.back;
+                self.front = node.back;
                 if let Some(new) = self.front {
                     // Cleanup its reference to the removed node
                     (*new.as_ptr()).front = None;
@@ -133,10 +157,11 @@ impl<T> LinkedList<T> {
                 // Bring the Box front to life so we can move out its value and
                 // Drop it (Box continues to magically understand this for us).
                 let boxed_node = Box::from_raw(node.as_ptr());
-                let result = boxed_node.elem;
+                let node = Box::into_inner(boxed_node);
+                let result = node.elem;
 
                 // Make the next node into the new back.
-                self.back = boxed_node.front;
+                self.back = node.front;
                 if let Some(new) = self.back {
                     // Cleanup its reference to the removed node
                     (*new.as_ptr()).back = None;
@@ -199,7 +224,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    pub fn cursor_mut(&mut self) -> CursorMut<T> {
+    pub fn cursor_mut(&mut self) -> CursorMut<T, A> {
         CursorMut {
             list: self,
             cur: None,
@@ -208,7 +233,7 @@ impl<T> LinkedList<T> {
     }
 }
 
-impl<T> Drop for LinkedList<T> {
+impl<T, A: Allocator> Drop for LinkedList<T, A> {
     fn drop(&mut self) {
         // Pop until we have to stop
         while self.pop_front().is_some() {}
@@ -253,27 +278,37 @@ impl<T: Debug> Debug for LinkedList<T> {
     }
 }
 
-impl<T: PartialEq> PartialEq for LinkedList<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.len() == other.len() && self.iter().eq(other)
+impl<T, U, A1, A2> PartialEq<LinkedList<U, A2>> for LinkedList<T, A1>
+where
+    T: PartialEq<U>,
+    A1: Allocator,
+    A2: Allocator,
+{
+    fn eq(&self, other: &LinkedList<U, A2>) -> bool {
+        self.len() == other.len() && self.iter().eq(other.iter())
     }
 }
 
-impl<T: Eq> Eq for LinkedList<T> {}
+impl<T: Eq, A: Allocator> Eq for LinkedList<T, A> {}
 
-impl<T: PartialOrd> PartialOrd for LinkedList<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+impl<T, A1, A2> PartialOrd<LinkedList<T, A2>> for LinkedList<T, A1>
+where
+    T: PartialOrd,
+    A1: Allocator,
+    A2: Allocator,
+{
+    fn partial_cmp(&self, other: &LinkedList<T, A2>) -> Option<Ordering> {
         self.iter().partial_cmp(other)
     }
 }
 
-impl<T: Ord> Ord for LinkedList<T> {
+impl<T: Ord, A: Allocator> Ord for LinkedList<T, A> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.iter().cmp(other)
     }
 }
 
-impl<T: Hash> Hash for LinkedList<T> {
+impl<T: Hash, A: Allocator> Hash for LinkedList<T, A> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.len().hash(state);
         for item in self {
@@ -282,7 +317,7 @@ impl<T: Hash> Hash for LinkedList<T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a LinkedList<T> {
+impl<'a, T, A: Allocator> IntoIterator for &'a LinkedList<T, A> {
     type IntoIter = Iter<'a, T>;
     type Item = &'a T;
 
@@ -335,7 +370,7 @@ impl<'a, T> ExactSizeIterator for Iter<'a, T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a mut LinkedList<T> {
+impl<'a, T, A: Allocator> IntoIterator for &'a mut LinkedList<T, A> {
     type IntoIter = IterMut<'a, T>;
     type Item = &'a mut T;
 
@@ -388,8 +423,8 @@ impl<'a, T> ExactSizeIterator for IterMut<'a, T> {
     }
 }
 
-impl<T> IntoIterator for LinkedList<T> {
-    type IntoIter = IntoIter<T>;
+impl<T, A: Allocator> IntoIterator for LinkedList<T, A> {
+    type IntoIter = IntoIter<T, A>;
     type Item = T;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -397,7 +432,7 @@ impl<T> IntoIterator for LinkedList<T> {
     }
 }
 
-impl<T> Iterator for IntoIter<T> {
+impl<T, A: Allocator> Iterator for IntoIter<T, A> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -421,7 +456,7 @@ impl<T> ExactSizeIterator for IntoIter<T> {
     }
 }
 
-impl<'a, T> CursorMut<'a, T> {
+impl<'a, T, A: Allocator> CursorMut<'a, T, A> {
     pub fn index(&self) -> Option<usize> {
         self.index
     }
@@ -502,7 +537,10 @@ impl<'a, T> CursorMut<'a, T> {
         }
     }
 
-    pub fn split_before(&mut self) -> LinkedList<T> {
+    pub fn split_before(&mut self) -> LinkedList<T, A>
+    where
+        A: Copy,
+    {
         // We have this:
         //
         //     list.front -> A <-> B <-> C <-> D <- list.back
@@ -554,17 +592,21 @@ impl<'a, T> CursorMut<'a, T> {
                     front: output_front,
                     back: output_back,
                     len: output_len,
+                    alloc: self.list.alloc,
                     _boo: PhantomData,
                 }
             }
         } else {
             // We're at the ghost, just replace our list with an empty one.
             // No other state needs to be changed.
-            std::mem::replace(self.list, LinkedList::new())
+            std::mem::replace(self.list, LinkedList::new_in(self.list.alloc))
         }
     }
 
-    pub fn split_after(&mut self) -> LinkedList<T> {
+    pub fn split_after(&mut self) -> LinkedList<T, A>
+    where
+        A: Copy,
+    {
         // We have this:
         //
         //     list.front -> A <-> B <-> C <-> D <- list.back
@@ -616,17 +658,18 @@ impl<'a, T> CursorMut<'a, T> {
                     front: output_front,
                     back: output_back,
                     len: output_len,
+                    alloc: self.list.alloc,
                     _boo: PhantomData,
                 }
             }
         } else {
             // We're at the ghost, just replace our list with an empty one.
             // No other state needs to be changed.
-            std::mem::replace(self.list, LinkedList::new())
+            std::mem::replace(self.list, LinkedList::new_in(self.list.alloc))
         }
     }
 
-    pub fn splice_before(&mut self, mut input: LinkedList<T>) {
+    pub fn splice_before(&mut self, mut input: LinkedList<T, A>) {
         // We have this:
         //
         // input.front -> 1 <-> 2 <- input.back
@@ -688,7 +731,7 @@ impl<'a, T> CursorMut<'a, T> {
         }
     }
 
-    pub fn splice_after(&mut self, mut input: LinkedList<T>) {
+    pub fn splice_after(&mut self, mut input: LinkedList<T, A>) {
         // We have this:
         //
         // input.front -> 1 <-> 2 <- input.back

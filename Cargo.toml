@@ -18,3 +18,5 @@ documentation = "https://docs.rs/linked-list/latest/linked_list"
 keywords = ["data-structures"]
 readme = "README.md"
 
+[dependencies]
+allocator-api2 = "0.2.20"
