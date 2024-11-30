@@ -20,3 +20,18 @@ readme = "README.md"
 
 [dependencies]
 allocator-api2 = "0.2.20"
+serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
+miniserde = { version = "0.1", optional = true }
+nanoserde = { version = "0.1", optional = true }
+
+[dev-dependencies]
+serde_json = "1.0"
+
+[features]
+default = ["std"]
+serde_std = ["std", "serde/std"]
+serde_no_std = ["serde/alloc"]
+std = []
+
+[package.metadata.docs.rs]
+features = ["serde", "miniserde", "nanoserde"]
