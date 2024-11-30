@@ -1,4 +1,4 @@
-//! ### Description
+//! # Description
 //!
 //! An alternative implementation of standard `LinkedList` featuring a prototype `Cursor`.
 

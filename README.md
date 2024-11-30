@@ -56,7 +56,7 @@ linked-list = { version = "0.0.3", features = ["serde"] }
 
 ### Description
 
-Dynamic collections implemented with compact bit vectors.
+An alternative implementation of standard `LinkedList` featuring a prototype `Cursor`.
 
 <!-- cargo-rdme end -->
 
