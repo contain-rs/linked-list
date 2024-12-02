@@ -13,8 +13,8 @@ use core::fmt::{self, Debug};
 use core::hash::{Hash, Hasher};
 use core::iter::FromIterator;
 use core::marker::PhantomData;
-use core::ptr::NonNull;
 use core::mem;
+use core::ptr::NonNull;
 
 use allocator_api2::{
     alloc::{Allocator, Global},
@@ -917,7 +917,9 @@ where
             }
         }
 
-        let visitor = SeqVisitor { marker: PhantomData };
+        let visitor = SeqVisitor {
+            marker: PhantomData,
+        };
         deserializer.deserialize_seq(visitor)
     }
 
@@ -975,11 +977,15 @@ impl<T: miniserde::Serialize, A: Allocator> miniserde::Serialize for LinkedList<
 }
 
 #[cfg(feature = "miniserde")]
-impl<T: miniserde::Deserialize, A: Allocator + Default> miniserde::Deserialize for LinkedList<T, A> {
+impl<T: miniserde::Deserialize, A: Allocator + Default> miniserde::Deserialize
+    for LinkedList<T, A>
+{
     fn begin(out: &mut Option<Self>) -> &mut dyn miniserde::de::Visitor {
         miniserde::make_place!(Place);
 
-        impl<T: miniserde::Deserialize, A: Allocator + Default> miniserde::de::Visitor for Place<LinkedList<T, A>> {
+        impl<T: miniserde::Deserialize, A: Allocator + Default> miniserde::de::Visitor
+            for Place<LinkedList<T, A>>
+        {
             fn seq(&mut self) -> miniserde::Result<std::boxed::Box<dyn miniserde::de::Seq + '_>> {
                 Ok(std::boxed::Box::new(VecBuilder {
                     out: &mut self.out,
@@ -1003,7 +1009,9 @@ impl<T: miniserde::Deserialize, A: Allocator + Default> miniserde::Deserialize f
             }
         }
 
-        impl<'a, T: miniserde::Deserialize, A: Allocator + Default> miniserde::de::Seq for VecBuilder<'a, T, A> {
+        impl<'a, T: miniserde::Deserialize, A: Allocator + Default> miniserde::de::Seq
+            for VecBuilder<'a, T, A>
+        {
             fn element(&mut self) -> miniserde::Result<&mut dyn miniserde::de::Visitor> {
                 self.shift();
                 Ok(miniserde::Deserialize::begin(&mut self.element))
@@ -1075,7 +1083,10 @@ mod nanoserde_impls {
     where
         T: nanoserde::DeJson,
     {
-        fn de_json(s: &mut nanoserde::DeJsonState, i: &mut std::str::Chars) -> Result<LinkedList<T>, nanoserde::DeJsonErr> {
+        fn de_json(
+            s: &mut nanoserde::DeJsonState,
+            i: &mut std::str::Chars,
+        ) -> Result<LinkedList<T>, nanoserde::DeJsonErr> {
             let mut out = LinkedList::new();
             s.block_open(i)?;
 
@@ -1112,7 +1123,10 @@ mod nanoserde_impls {
     where
         T: nanoserde::DeRon,
     {
-        fn de_ron(s: &mut nanoserde::DeRonState, i: &mut std::str::Chars) -> Result<LinkedList<T>, nanoserde::DeRonErr> {
+        fn de_ron(
+            s: &mut nanoserde::DeRonState,
+            i: &mut std::str::Chars,
+        ) -> Result<LinkedList<T>, nanoserde::DeRonErr> {
             let mut out = LinkedList::new();
             s.block_open(i)?;
 
@@ -1147,7 +1161,10 @@ where
     fn serialize<W: borsh::io::Write>(&self, writer: &mut W) -> borsh::io::Result<()> {
         fn check_zst<T>() -> borsh::io::Result<()> {
             if size_of::<T>() == 0 {
-                return Err(borsh::io::Error::new(borsh::io::ErrorKind::InvalidData, borsh::error::ERROR_ZST_FORBIDDEN));
+                return Err(borsh::io::Error::new(
+                    borsh::io::ErrorKind::InvalidData,
+                    borsh::error::ERROR_ZST_FORBIDDEN,
+                ));
             }
             Ok(())
         }
@@ -1155,7 +1172,8 @@ where
         check_zst::<T>()?;
 
         writer.write_all(
-            &(u32::try_from(self.len()).map_err(|_| borsh::io::ErrorKind::InvalidData)?).to_le_bytes(),
+            &(u32::try_from(self.len()).map_err(|_| borsh::io::ErrorKind::InvalidData)?)
+                .to_le_bytes(),
         )?;
         for item in self {
             item.serialize(writer)?;
