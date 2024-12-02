@@ -1,7 +1,7 @@
 <div align="center">
   <h1>linked-list</h1>
   <p>
-    <strong>A compact vector of bits.</strong>
+    <strong>A simple linked list.</strong>
   </p>
   <p>
 

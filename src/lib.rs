@@ -5,7 +5,7 @@
 #![no_std]
 
 #[cfg(any(test, feature = "std"))]
-#[macro_use]
+#[cfg_attr(test, macro_use)]
 extern crate std;
 
 use core::cmp::Ordering;
@@ -131,13 +131,22 @@ impl<T, A: Allocator> LinkedList<T, A> {
     }
 
     pub fn pop_front(&mut self) -> Option<T> {
+        // workaround for a bug in allocator-api2
+        fn into_inner<T, A: Allocator>(boxed: Box<T, A>) -> T {
+            use allocator_api2::alloc::Layout;
+            let (ptr, alloc) = Box::into_raw_with_allocator(boxed);
+            let unboxed = unsafe { ptr.read() };
+            unsafe { alloc.deallocate(NonNull::new(ptr).unwrap().cast(), Layout::new::<T>()) };
+            unboxed
+        }
+
         unsafe {
             // Only have to do stuff if there is a front node to pop.
             self.front.map(|node| {
                 // Bring the Box back to life so we can move out its value and
                 // Drop it (Box continues to magically understand this for us).
                 let boxed_node = Box::from_raw_in(node.as_ptr(), &self.alloc);
-                let node = Box::into_inner(boxed_node);
+                let node = into_inner(boxed_node);
                 let result = node.elem;
 
                 // Make the next node into the new front.
@@ -158,13 +167,22 @@ impl<T, A: Allocator> LinkedList<T, A> {
     }
 
     pub fn pop_back(&mut self) -> Option<T> {
+        // workaround for a bug in allocator-api2
+        fn into_inner<T, A: Allocator>(boxed: Box<T, A>) -> T {
+            use allocator_api2::alloc::Layout;
+            let (ptr, alloc) = Box::into_raw_with_allocator(boxed);
+            let unboxed = unsafe { ptr.read() };
+            unsafe { alloc.deallocate(NonNull::new(ptr).unwrap().cast(), Layout::new::<T>()) };
+            unboxed
+        }
+
         unsafe {
             // Only have to do stuff if there is a back node to pop.
             self.back.map(|node| {
                 // Bring the Box front to life so we can move out its value and
                 // Drop it (Box continues to magically understand this for us).
                 let boxed_node = Box::from_raw(node.as_ptr());
-                let node = Box::into_inner(boxed_node);
+                let node = into_inner(boxed_node);
                 let result = node.elem;
 
                 // Make the next node into the new back.
@@ -836,7 +854,7 @@ fn assert_properties() {
         x
     }
 
-    /// ```compile_fail,E0308
+    /// ```compile_fail
     /// use linked_list::IterMut;
     ///
     /// fn iter_mut_covariant<'i, 'a, T>(x: IterMut<'i, &'static T>) -> IterMut<'i, &'a T> { x }
