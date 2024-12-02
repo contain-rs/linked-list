@@ -11,6 +11,7 @@ authors = [
 ]
 
 edition = "2021"
+rust-version = "1.63"
 
 repository = "https://github.com/contain-rs/linked-list"
 homepage = "https://github.com/contain-rs/linked-list"
