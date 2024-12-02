@@ -19,12 +19,12 @@
 
 [crates.io shield]: https://img.shields.io/crates/v/linked-list?label=latest
 [crates.io link]: https://crates.io/crates/linked-list
-[docs.rs badge]: https://docs.rs/linked-list/badge.svg?version=0.0.3
-[docs.rs link]: https://docs.rs/linked-list/0.0.3/linked_list/
+[docs.rs badge]: https://docs.rs/linked-list/badge.svg?version=0.1.0
+[docs.rs link]: https://docs.rs/linked-list/0.1.0/linked_list/
 [github ci badge]: https://github.com/contain-rs/linked-list/workflows/Rust/badge.svg?branch=master
 [rustc 1.67+]: https://img.shields.io/badge/rustc-1.67%2B-blue.svg
-[deps.rs status]: https://deps.rs/crate/linked-list/0.0.3/status.svg
-[deps.rs link]: https://deps.rs/crate/linked-list/0.0.3
+[deps.rs status]: https://deps.rs/crate/linked-list/0.1.0/status.svg
+[deps.rs link]: https://deps.rs/crate/linked-list/0.1.0
 [shields.io download count]: https://img.shields.io/crates/d/linked-list.svg
 
 ## Usage
@@ -33,7 +33,7 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-linked-list = "0.0.3"
+linked-list = "0.1"
 ```
 
 Since Rust 2018, `extern crate` is no longer mandatory. If your edition is old (Rust 2015),
@@ -47,8 +47,19 @@ If you want [serde](https://github.com/serde-rs/serde) support, include the feat
 
 ```toml
 [dependencies]
-linked-list = { version = "0.0.3", features = ["serde"] }
+linked-list = { version = "0.1", features = ["serde"] }
 ```
+
+If you want [borsh-rs](https://github.com/near/borsh-rs) support, include it like this:
+
+```toml
+[dependencies]
+linked-list = { version = "0.1", features = ["borsh"] }
+```
+
+Other available serialization libraries can be enabled with the
+[`miniserde`](https://github.com/dtolnay/miniserde) and
+[`nanoserde`](https://github.com/not-fl3/nanoserde) features.
 
 <!-- cargo-rdme start -->
 
