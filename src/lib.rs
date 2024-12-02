@@ -1160,7 +1160,7 @@ where
     #[inline]
     fn serialize<W: borsh::io::Write>(&self, writer: &mut W) -> borsh::io::Result<()> {
         fn check_zst<T>() -> borsh::io::Result<()> {
-            if size_of::<T>() == 0 {
+            if core::mem::size_of::<T>() == 0 {
                 return Err(borsh::io::Error::new(
                     borsh::io::ErrorKind::InvalidData,
                     borsh::error::ERROR_ZST_FORBIDDEN,
