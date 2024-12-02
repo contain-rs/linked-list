@@ -816,15 +816,147 @@ impl<'a, T, A: Allocator> CursorMut<'a, T, A> {
             // Input dropped here
         }
     }
+
+    /// Insert `item` after the cursor
+    pub fn insert_after(&mut self, item: T) {
+        // We have this:
+        // list.front -> A <-> B <-> C <- list.back
+        //                     ^
+        //                    cur
+        // item -> 1
+        //
+        // Becoming this:
+        //
+        // list.front -> A <-> B <-> 1 <-> C <- list.back
+        //                     ^
+        //                    cur
+        //
+        unsafe {
+            // SAFETY: it's a linked-list, what do you want?
+            if let Some(cur) = self.cur {
+                let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
+                    back: None,
+                    front: None,
+                    elem: item,
+                })));
+                let old_back = (*cur.as_ptr()).back;
+                (*new.as_ptr()).back = old_back;
+                (*new.as_ptr()).front = Some(cur);
+
+                (*cur.as_ptr()).back = Some(new);
+                if let Some(n) = old_back {
+                    (*n.as_ptr()).front = Some(new)
+                }
+
+                if self.list.back == self.cur {
+                    self.list.back = Some(new);
+                }
+
+                self.list.len += 1;
+            } else {
+                self.list.push_front(item);
+            }
+        }
+    }
+    /// Insert `item` before the cursor
+    pub fn insert_before(&mut self, item: T) {
+        // We have this:
+        // list.front -> A <-> B <-> C <- list.back
+        //                     ^
+        //                    cur
+        // item -> 1
+        //
+        // Becoming this:
+        //
+        // list.front -> A <-> <-> 1 <-> B <-> C <- list.back
+        //                               ^
+        //                              cur
+        //
+        unsafe {
+            // SAFETY: it's a linked-list, what do you want?
+            if let Some(cur) = self.cur {
+                let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
+                    back: None,
+                    front: None,
+                    elem: item,
+                })));
+                let old_front = (*cur.as_ptr()).front;
+                (*new.as_ptr()).front = old_front;
+                (*new.as_ptr()).back = Some(cur);
+
+                (*cur.as_ptr()).front = Some(new);
+                if let Some(n) = old_front {
+                    (*n.as_ptr()).back = Some(new)
+                }
+
+                if self.list.front == self.cur {
+                    self.list.front = Some(new);
+                }
+
+                self.list.len += 1;
+            } else {
+                self.list.push_back(item);
+            }
+            self.index = self.index.map(|i| i + 1);
+        }
+    }
+
+    /// Remove the current item. The new current item is the item following the
+    /// removed one.
+    pub fn remove_current(&mut self) -> Option<T> {
+        // Only have to do stuff if there is a front node to pop.
+        self.cur.and_then(|node| {
+            unsafe {
+                if let Some(front) = self.list.front {
+                    if front == node {
+                        let tmp = self.list.pop_front();
+                        self.cur = self.list.front;
+                        tmp
+                    } else if self.list.back.unwrap() == node {
+                        let tmp = self.list.pop_back();
+                        self.cur = None;
+                        self.index = None;
+                        tmp
+                    } else {
+                        // Bring the Box back to life so we can move out its value and
+                        // Drop it (Box continues to magically understand this for us).
+                        let boxed_node = Box::from_raw(node.as_ptr());
+                        let result = boxed_node.elem;
+
+                        let old_front = boxed_node.front;
+                        let old_back = boxed_node.back;
+                        // Fix the pointers.
+                        if let Some(n) = boxed_node.back {
+                            (*n.as_ptr()).front = old_front
+                        }
+                        if let Some(n) = boxed_node.front {
+                            (*n.as_ptr()).back = old_back
+                        }
+
+                        self.cur = old_back;
+
+                        self.list.len -= 1;
+                        Some(result)
+                        // Box gets implicitly freed here, knows there is no T.
+                    }
+                } else {
+                    None
+                }
+            }
+        })
+    }
 }
 
 unsafe impl<T: Send> Send for LinkedList<T> {}
+
 unsafe impl<T: Sync> Sync for LinkedList<T> {}
 
 unsafe impl<'a, T: Send> Send for Iter<'a, T> {}
+
 unsafe impl<'a, T: Sync> Sync for Iter<'a, T> {}
 
 unsafe impl<'a, T: Send> Send for IterMut<'a, T> {}
+
 unsafe impl<'a, T: Sync> Sync for IterMut<'a, T> {}
 
 #[allow(dead_code)]
@@ -1505,7 +1637,7 @@ mod test {
         cursor.move_next();
         cursor.splice_before(Some(7).into_iter().collect());
         cursor.splice_after(Some(8).into_iter().collect());
-        // check_links(&m);
+        check_links(&m);
         assert_eq!(
             m.iter().cloned().collect::<Vec<_>>(),
             &[7, 1, 8, 2, 3, 4, 5, 6]
@@ -1521,7 +1653,28 @@ mod test {
             &[10, 7, 1, 8, 2, 3, 4, 5, 6, 9]
         );
 
-        /* remove_current not impl'd
+        let mut m: LinkedList<u32> = LinkedList::new();
+        m.extend([1, 2, 3, 4, 5, 6]);
+        let mut cursor = m.cursor_mut();
+        cursor.move_next();
+        cursor.insert_before(7);
+        cursor.insert_after(8);
+        check_links(&m);
+        assert_eq!(
+            m.iter().cloned().collect::<Vec<_>>(),
+            &[7, 1, 8, 2, 3, 4, 5, 6]
+        );
+        let mut cursor = m.cursor_mut();
+        cursor.move_next();
+        cursor.move_prev();
+        cursor.insert_before(9);
+        cursor.insert_after(10);
+        check_links(&m);
+        assert_eq!(
+            m.iter().cloned().collect::<Vec<_>>(),
+            &[10, 7, 1, 8, 2, 3, 4, 5, 6, 9]
+        );
+
         let mut cursor = m.cursor_mut();
         cursor.move_next();
         cursor.move_prev();
@@ -1536,8 +1689,10 @@ mod test {
         cursor.move_next();
         assert_eq!(cursor.remove_current(), Some(10));
         check_links(&m);
-        assert_eq!(m.iter().cloned().collect::<Vec<_>>(), &[1, 8, 2, 3, 4, 5, 6]);
-        */
+        assert_eq!(
+            m.iter().cloned().collect::<Vec<_>>(),
+            &[1, 8, 2, 3, 4, 5, 6]
+        );
 
         let mut m: LinkedList<u32> = LinkedList::new();
         m.extend([1, 8, 2, 3, 4, 5, 6]);
