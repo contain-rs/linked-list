@@ -281,7 +281,7 @@ impl<T: Clone, A: Allocator + Clone> Clone for LinkedList<T, A> {
     }
 }
 
-impl<T> Extend<T> for LinkedList<T> {
+impl<T, A: Allocator> Extend<T> for LinkedList<T, A> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for item in iter {
             self.push_back(item);
@@ -289,15 +289,15 @@ impl<T> Extend<T> for LinkedList<T> {
     }
 }
 
-impl<T> FromIterator<T> for LinkedList<T> {
+impl<T, A: Allocator + Default> FromIterator<T> for LinkedList<T, A> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let mut list = Self::new();
+        let mut list = Self::new_in(Default::default());
         list.extend(iter);
         list
     }
 }
 
-impl<T: Debug> Debug for LinkedList<T> {
+impl<T: Debug, A: Allocator> Debug for LinkedList<T, A> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self).finish()
     }
@@ -1126,7 +1126,43 @@ mod nanoserde_impls {
     }
 }
 
+#[cfg(feature = "borsh")]
+impl<T, A: Allocator + Default> borsh::BorshDeserialize for LinkedList<T, A>
+where
+    T: borsh::BorshDeserialize,
+{
+    #[inline]
+    fn deserialize_reader<R: borsh::io::Read>(reader: &mut R) -> borsh::io::Result<Self> {
+        let vec = <std::vec::Vec<T>>::deserialize_reader(reader)?;
+        Ok(vec.into_iter().collect::<LinkedList<T, A>>())
+    }
+}
 
+#[cfg(feature = "borsh")]
+impl<T, A: Allocator> borsh::BorshSerialize for LinkedList<T, A>
+where
+    T: borsh::BorshSerialize,
+{
+    #[inline]
+    fn serialize<W: borsh::io::Write>(&self, writer: &mut W) -> borsh::io::Result<()> {
+        fn check_zst<T>() -> borsh::io::Result<()> {
+            if size_of::<T>() == 0 {
+                return Err(borsh::io::Error::new(borsh::io::ErrorKind::InvalidData, borsh::error::ERROR_ZST_FORBIDDEN));
+            }
+            Ok(())
+        }
+
+        check_zst::<T>()?;
+
+        writer.write_all(
+            &(u32::try_from(self.len()).map_err(|_| borsh::io::ErrorKind::InvalidData)?).to_le_bytes(),
+        )?;
+        for item in self {
+            item.serialize(writer)?;
+        }
+        Ok(())
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -1538,31 +1574,31 @@ mod test {
     #[cfg(feature = "serde")]
     #[test]
     fn test_serialization() {
-        let bit_vec: LinkedList<bool> = LinkedList::new();
-        let serialized = serde_json::to_string(&bit_vec).unwrap();
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = serde_json::to_string(&linked_list).unwrap();
         let unserialized: LinkedList<bool> = serde_json::from_str(&serialized).unwrap();
-        assert_eq!(bit_vec, unserialized);
+        assert_eq!(linked_list, unserialized);
 
         let bools = vec![true, false, true, true];
-        let bit_vec: LinkedList<bool> = bools.iter().map(|n| *n).collect();
-        let serialized = serde_json::to_string(&bit_vec).unwrap();
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = serde_json::to_string(&linked_list).unwrap();
         let unserialized: LinkedList<bool> = serde_json::from_str(&serialized).unwrap();
-        assert_eq!(bit_vec, unserialized);
+        assert_eq!(linked_list, unserialized);
     }
 
     #[cfg(feature = "miniserde")]
     #[test]
     fn test_miniserde_serialization() {
-        let bit_vec: LinkedList<bool> = LinkedList::new();
-        let serialized = miniserde::json::to_string(&bit_vec);
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = miniserde::json::to_string(&linked_list);
         let unserialized: LinkedList<bool> = miniserde::json::from_str(&serialized[..]).unwrap();
-        assert_eq!(bit_vec, unserialized);
+        assert_eq!(linked_list, unserialized);
 
         let bools = vec![true, false, true, true];
-        let bit_vec: LinkedList<bool> = bools.iter().map(|n| *n).collect();
-        let serialized = miniserde::json::to_string(&bit_vec);
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = miniserde::json::to_string(&linked_list);
         let unserialized: LinkedList<bool> = miniserde::json::from_str(&serialized[..]).unwrap();
-        assert_eq!(bit_vec, unserialized);
+        assert_eq!(linked_list, unserialized);
     }
 
     #[cfg(feature = "nanoserde")]
@@ -1570,15 +1606,30 @@ mod test {
     fn test_nanoserde_json_serialization() {
         use nanoserde::{DeJson, SerJson};
 
-        let bit_vec: LinkedList<bool> = LinkedList::new();
-        let serialized = bit_vec.serialize_json();
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = linked_list.serialize_json();
         let unserialized: LinkedList<bool> = LinkedList::deserialize_json(&serialized[..]).unwrap();
-        assert_eq!(bit_vec, unserialized);
+        assert_eq!(linked_list, unserialized);
 
         let bools = vec![true, false, true, true];
-        let bit_vec: LinkedList<bool> = bools.iter().map(|n| *n).collect();
-        let serialized = bit_vec.serialize_json();
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = linked_list.serialize_json();
         let unserialized: LinkedList<bool> = LinkedList::deserialize_json(&serialized[..]).unwrap();
-        assert_eq!(bit_vec, unserialized);
+        assert_eq!(linked_list, unserialized);
+    }
+
+    #[cfg(feature = "borsh")]
+    #[test]
+    fn test_borsh_serialization() {
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = borsh::to_vec(&linked_list).unwrap();
+        let unserialized: LinkedList<bool> = borsh::from_slice(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
+
+        let bools = vec![true, false, true, true];
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = borsh::to_vec(&linked_list).unwrap();
+        let unserialized: LinkedList<bool> = borsh::from_slice(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
     }
 }
