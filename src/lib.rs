@@ -1,14 +1,31 @@
-use std::cmp::Ordering;
-use std::fmt::{self, Debug};
-use std::hash::{Hash, Hasher};
-use std::iter::FromIterator;
-use std::marker::PhantomData;
-use std::ptr::NonNull;
+//! # Description
+//!
+//! An alternative implementation of standard `LinkedList` featuring a prototype `Cursor`.
 
-pub struct LinkedList<T> {
+#![no_std]
+
+#[cfg(any(test, feature = "std"))]
+#[cfg_attr(test, macro_use)]
+extern crate std;
+
+use core::cmp::Ordering;
+use core::fmt::{self, Debug};
+use core::hash::{Hash, Hasher};
+use core::iter::FromIterator;
+use core::marker::PhantomData;
+use core::mem;
+use core::ptr::NonNull;
+
+use allocator_api2::{
+    alloc::{Allocator, Global},
+    boxed::Box,
+};
+
+pub struct LinkedList<T, A: Allocator = Global> {
     front: Link<T>,
     back: Link<T>,
     len: usize,
+    alloc: A,
     _boo: PhantomData<T>,
 }
 
@@ -34,22 +51,29 @@ pub struct IterMut<'a, T> {
     _boo: PhantomData<&'a mut T>,
 }
 
-pub struct IntoIter<T> {
-    list: LinkedList<T>,
+pub struct IntoIter<T, A: Allocator = Global> {
+    list: LinkedList<T, A>,
 }
 
-pub struct CursorMut<'a, T> {
-    list: &'a mut LinkedList<T>,
+pub struct CursorMut<'a, T, A: Allocator = Global> {
+    list: &'a mut LinkedList<T, A>,
     cur: Link<T>,
     index: Option<usize>,
 }
 
 impl<T> LinkedList<T> {
     pub fn new() -> Self {
+        Self::new_in(Default::default())
+    }
+}
+
+impl<T, A: Allocator> LinkedList<T, A> {
+    pub fn new_in(alloc: A) -> Self {
         Self {
             front: None,
             back: None,
             len: 0,
+            alloc,
             _boo: PhantomData,
         }
     }
@@ -57,11 +81,14 @@ impl<T> LinkedList<T> {
     pub fn push_front(&mut self, elem: T) {
         // SAFETY: it's a linked-list, what do you want?
         unsafe {
-            let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
-                front: None,
-                back: None,
-                elem,
-            })));
+            let new = NonNull::new_unchecked(Box::into_raw(Box::new_in(
+                Node {
+                    front: None,
+                    back: None,
+                    elem,
+                },
+                &self.alloc,
+            )));
             if let Some(old) = self.front {
                 // Put the new front before the old one
                 (*old.as_ptr()).front = Some(new);
@@ -80,11 +107,14 @@ impl<T> LinkedList<T> {
     pub fn push_back(&mut self, elem: T) {
         // SAFETY: it's a linked-list, what do you want?
         unsafe {
-            let new = NonNull::new_unchecked(Box::into_raw(Box::new(Node {
-                back: None,
-                front: None,
-                elem,
-            })));
+            let new = NonNull::new_unchecked(Box::into_raw(Box::new_in(
+                Node {
+                    back: None,
+                    front: None,
+                    elem,
+                },
+                &self.alloc,
+            )));
             if let Some(old) = self.back {
                 // Put the new back before the old one
                 (*old.as_ptr()).back = Some(new);
@@ -101,16 +131,26 @@ impl<T> LinkedList<T> {
     }
 
     pub fn pop_front(&mut self) -> Option<T> {
+        // workaround for a bug in allocator-api2
+        fn into_inner<T, A: Allocator>(boxed: Box<T, A>) -> T {
+            use allocator_api2::alloc::Layout;
+            let (ptr, alloc) = Box::into_raw_with_allocator(boxed);
+            let unboxed = unsafe { ptr.read() };
+            unsafe { alloc.deallocate(NonNull::new(ptr).unwrap().cast(), Layout::new::<T>()) };
+            unboxed
+        }
+
         unsafe {
             // Only have to do stuff if there is a front node to pop.
             self.front.map(|node| {
                 // Bring the Box back to life so we can move out its value and
                 // Drop it (Box continues to magically understand this for us).
-                let boxed_node = Box::from_raw(node.as_ptr());
-                let result = boxed_node.elem;
+                let boxed_node = Box::from_raw_in(node.as_ptr(), &self.alloc);
+                let node = into_inner(boxed_node);
+                let result = node.elem;
 
                 // Make the next node into the new front.
-                self.front = boxed_node.back;
+                self.front = node.back;
                 if let Some(new) = self.front {
                     // Cleanup its reference to the removed node
                     (*new.as_ptr()).front = None;
@@ -127,16 +167,26 @@ impl<T> LinkedList<T> {
     }
 
     pub fn pop_back(&mut self) -> Option<T> {
+        // workaround for a bug in allocator-api2
+        fn into_inner<T, A: Allocator>(boxed: Box<T, A>) -> T {
+            use allocator_api2::alloc::Layout;
+            let (ptr, alloc) = Box::into_raw_with_allocator(boxed);
+            let unboxed = unsafe { ptr.read() };
+            unsafe { alloc.deallocate(NonNull::new(ptr).unwrap().cast(), Layout::new::<T>()) };
+            unboxed
+        }
+
         unsafe {
             // Only have to do stuff if there is a back node to pop.
             self.back.map(|node| {
                 // Bring the Box front to life so we can move out its value and
                 // Drop it (Box continues to magically understand this for us).
                 let boxed_node = Box::from_raw(node.as_ptr());
-                let result = boxed_node.elem;
+                let node = into_inner(boxed_node);
+                let result = node.elem;
 
                 // Make the next node into the new back.
-                self.back = boxed_node.front;
+                self.back = node.front;
                 if let Some(new) = self.back {
                     // Cleanup its reference to the removed node
                     (*new.as_ptr()).back = None;
@@ -199,7 +249,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    pub fn cursor_mut(&mut self) -> CursorMut<T> {
+    pub fn cursor_mut(&mut self) -> CursorMut<T, A> {
         CursorMut {
             list: self,
             cur: None,
@@ -208,22 +258,22 @@ impl<T> LinkedList<T> {
     }
 }
 
-impl<T> Drop for LinkedList<T> {
+impl<T, A: Allocator> Drop for LinkedList<T, A> {
     fn drop(&mut self) {
         // Pop until we have to stop
         while self.pop_front().is_some() {}
     }
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T, A: Allocator + Default> Default for LinkedList<T, A> {
     fn default() -> Self {
-        Self::new()
+        Self::new_in(Default::default())
     }
 }
 
-impl<T: Clone> Clone for LinkedList<T> {
+impl<T: Clone, A: Allocator + Clone> Clone for LinkedList<T, A> {
     fn clone(&self) -> Self {
-        let mut new_list = Self::new();
+        let mut new_list = Self::new_in(self.alloc.clone());
         for item in self {
             new_list.push_back(item.clone());
         }
@@ -231,7 +281,7 @@ impl<T: Clone> Clone for LinkedList<T> {
     }
 }
 
-impl<T> Extend<T> for LinkedList<T> {
+impl<T, A: Allocator> Extend<T> for LinkedList<T, A> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for item in iter {
             self.push_back(item);
@@ -239,41 +289,51 @@ impl<T> Extend<T> for LinkedList<T> {
     }
 }
 
-impl<T> FromIterator<T> for LinkedList<T> {
+impl<T, A: Allocator + Default> FromIterator<T> for LinkedList<T, A> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let mut list = Self::new();
+        let mut list = Self::new_in(Default::default());
         list.extend(iter);
         list
     }
 }
 
-impl<T: Debug> Debug for LinkedList<T> {
+impl<T: Debug, A: Allocator> Debug for LinkedList<T, A> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self).finish()
     }
 }
 
-impl<T: PartialEq> PartialEq for LinkedList<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.len() == other.len() && self.iter().eq(other)
+impl<T, U, A1, A2> PartialEq<LinkedList<U, A2>> for LinkedList<T, A1>
+where
+    T: PartialEq<U>,
+    A1: Allocator,
+    A2: Allocator,
+{
+    fn eq(&self, other: &LinkedList<U, A2>) -> bool {
+        self.len() == other.len() && self.iter().eq(other.iter())
     }
 }
 
-impl<T: Eq> Eq for LinkedList<T> {}
+impl<T: Eq, A: Allocator> Eq for LinkedList<T, A> {}
 
-impl<T: PartialOrd> PartialOrd for LinkedList<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+impl<T, A1, A2> PartialOrd<LinkedList<T, A2>> for LinkedList<T, A1>
+where
+    T: PartialOrd,
+    A1: Allocator,
+    A2: Allocator,
+{
+    fn partial_cmp(&self, other: &LinkedList<T, A2>) -> Option<Ordering> {
         self.iter().partial_cmp(other)
     }
 }
 
-impl<T: Ord> Ord for LinkedList<T> {
+impl<T: Ord, A: Allocator> Ord for LinkedList<T, A> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.iter().cmp(other)
     }
 }
 
-impl<T: Hash> Hash for LinkedList<T> {
+impl<T: Hash, A: Allocator> Hash for LinkedList<T, A> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.len().hash(state);
         for item in self {
@@ -282,7 +342,7 @@ impl<T: Hash> Hash for LinkedList<T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a LinkedList<T> {
+impl<'a, T, A: Allocator> IntoIterator for &'a LinkedList<T, A> {
     type IntoIter = Iter<'a, T>;
     type Item = &'a T;
 
@@ -335,7 +395,7 @@ impl<'a, T> ExactSizeIterator for Iter<'a, T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a mut LinkedList<T> {
+impl<'a, T, A: Allocator> IntoIterator for &'a mut LinkedList<T, A> {
     type IntoIter = IterMut<'a, T>;
     type Item = &'a mut T;
 
@@ -388,8 +448,8 @@ impl<'a, T> ExactSizeIterator for IterMut<'a, T> {
     }
 }
 
-impl<T> IntoIterator for LinkedList<T> {
-    type IntoIter = IntoIter<T>;
+impl<T, A: Allocator> IntoIterator for LinkedList<T, A> {
+    type IntoIter = IntoIter<T, A>;
     type Item = T;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -397,7 +457,7 @@ impl<T> IntoIterator for LinkedList<T> {
     }
 }
 
-impl<T> Iterator for IntoIter<T> {
+impl<T, A: Allocator> Iterator for IntoIter<T, A> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -421,7 +481,7 @@ impl<T> ExactSizeIterator for IntoIter<T> {
     }
 }
 
-impl<'a, T> CursorMut<'a, T> {
+impl<'a, T, A: Allocator> CursorMut<'a, T, A> {
     pub fn index(&self) -> Option<usize> {
         self.index
     }
@@ -502,7 +562,10 @@ impl<'a, T> CursorMut<'a, T> {
         }
     }
 
-    pub fn split_before(&mut self) -> LinkedList<T> {
+    pub fn split_before(&mut self) -> LinkedList<T, A>
+    where
+        A: Copy,
+    {
         // We have this:
         //
         //     list.front -> A <-> B <-> C <-> D <- list.back
@@ -554,17 +617,21 @@ impl<'a, T> CursorMut<'a, T> {
                     front: output_front,
                     back: output_back,
                     len: output_len,
+                    alloc: self.list.alloc,
                     _boo: PhantomData,
                 }
             }
         } else {
             // We're at the ghost, just replace our list with an empty one.
             // No other state needs to be changed.
-            std::mem::replace(self.list, LinkedList::new())
+            mem::replace(self.list, LinkedList::new_in(self.list.alloc))
         }
     }
 
-    pub fn split_after(&mut self) -> LinkedList<T> {
+    pub fn split_after(&mut self) -> LinkedList<T, A>
+    where
+        A: Copy,
+    {
         // We have this:
         //
         //     list.front -> A <-> B <-> C <-> D <- list.back
@@ -616,17 +683,18 @@ impl<'a, T> CursorMut<'a, T> {
                     front: output_front,
                     back: output_back,
                     len: output_len,
+                    alloc: self.list.alloc,
                     _boo: PhantomData,
                 }
             }
         } else {
             // We're at the ghost, just replace our list with an empty one.
             // No other state needs to be changed.
-            std::mem::replace(self.list, LinkedList::new())
+            mem::replace(self.list, LinkedList::new_in(self.list.alloc))
         }
     }
 
-    pub fn splice_before(&mut self, mut input: LinkedList<T>) {
+    pub fn splice_before(&mut self, mut input: LinkedList<T, A>) {
         // We have this:
         //
         // input.front -> 1 <-> 2 <- input.back
@@ -677,7 +745,7 @@ impl<'a, T> CursorMut<'a, T> {
                 self.list.back = Some(in_back);
             } else {
                 // We're empty, become the input, remain on the ghost
-                std::mem::swap(self.list, &mut input);
+                mem::swap(self.list, &mut input);
             }
 
             self.list.len += input.len;
@@ -688,7 +756,7 @@ impl<'a, T> CursorMut<'a, T> {
         }
     }
 
-    pub fn splice_after(&mut self, mut input: LinkedList<T>) {
+    pub fn splice_after(&mut self, mut input: LinkedList<T, A>) {
         // We have this:
         //
         // input.front -> 1 <-> 2 <- input.back
@@ -738,7 +806,7 @@ impl<'a, T> CursorMut<'a, T> {
                 self.list.front = Some(in_front);
             } else {
                 // We're empty, become the input, remain on the ghost
-                std::mem::swap(self.list, &mut input);
+                mem::swap(self.list, &mut input);
             }
 
             self.list.len += input.len;
@@ -786,7 +854,7 @@ fn assert_properties() {
         x
     }
 
-    /// ```compile_fail,E0308
+    /// ```compile_fail
     /// use linked_list::IterMut;
     ///
     /// fn iter_mut_covariant<'i, 'a, T>(x: IterMut<'i, &'static T>) -> IterMut<'i, &'a T> { x }
@@ -794,9 +862,331 @@ fn assert_properties() {
     fn iter_mut_invariant() {}
 }
 
+#[cfg(feature = "serde")]
+impl<T, A> serde::Serialize for LinkedList<T, A>
+where
+    T: serde::Serialize,
+    A: Allocator,
+{
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.collect_seq(self)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T, A> serde::Deserialize<'de> for LinkedList<T, A>
+where
+    T: serde::Deserialize<'de>,
+    A: Allocator + Default,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct SeqVisitor<T, A: Allocator> {
+            marker: PhantomData<LinkedList<T, A>>,
+        }
+
+        impl<'de, T, A> serde::de::Visitor<'de> for SeqVisitor<T, A>
+        where
+            T: serde::Deserialize<'de>,
+            A: Allocator + Default,
+        {
+            type Value = LinkedList<T, A>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a sequence")
+            }
+
+            #[inline]
+            fn visit_seq<B>(self, mut seq: B) -> Result<Self::Value, B::Error>
+            where
+                B: serde::de::SeqAccess<'de>,
+            {
+                let mut values = LinkedList::new_in(Default::default());
+
+                while let Some(value) = seq.next_element()? {
+                    LinkedList::push_back(&mut values, value);
+                }
+
+                Ok(values)
+            }
+        }
+
+        let visitor = SeqVisitor {
+            marker: PhantomData,
+        };
+        deserializer.deserialize_seq(visitor)
+    }
+
+    fn deserialize_in_place<D>(deserializer: D, place: &mut Self) -> Result<(), D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct SeqInPlaceVisitor<'a, T: 'a, A: Allocator + 'a>(&'a mut LinkedList<T, A>);
+
+        impl<'a, 'de, T, A> serde::de::Visitor<'de> for SeqInPlaceVisitor<'a, T, A>
+        where
+            T: serde::Deserialize<'de>,
+            A: Allocator,
+        {
+            type Value = ();
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a sequence")
+            }
+
+            #[inline]
+            fn visit_seq<B>(mut self, mut seq: B) -> Result<Self::Value, B::Error>
+            where
+                B: serde::de::SeqAccess<'de>,
+            {
+                LinkedList::clear(&mut self.0);
+
+                // FIXME: try to overwrite old values here? (Vec, VecDeque, LinkedList)
+                while let Some(value) = seq.next_element()? {
+                    LinkedList::push_back(&mut self.0, value);
+                }
+
+                Ok(())
+            }
+        }
+
+        deserializer.deserialize_seq(SeqInPlaceVisitor(place))
+    }
+}
+
+#[cfg(feature = "miniserde")]
+impl<T: miniserde::Serialize, A: Allocator> miniserde::Serialize for LinkedList<T, A> {
+    fn begin(&self) -> miniserde::ser::Fragment {
+        struct Stream<'a, T: 'a>(Iter<'a, T>);
+
+        impl<'a, T: miniserde::Serialize> miniserde::ser::Seq for Stream<'a, T> {
+            fn next(&mut self) -> Option<&dyn miniserde::Serialize> {
+                let element = self.0.next()?;
+                Some(element)
+            }
+        }
+
+        miniserde::ser::Fragment::Seq(std::boxed::Box::new(Stream(self.iter())))
+    }
+}
+
+#[cfg(feature = "miniserde")]
+impl<T: miniserde::Deserialize, A: Allocator + Default> miniserde::Deserialize
+    for LinkedList<T, A>
+{
+    fn begin(out: &mut Option<Self>) -> &mut dyn miniserde::de::Visitor {
+        miniserde::make_place!(Place);
+
+        impl<T: miniserde::Deserialize, A: Allocator + Default> miniserde::de::Visitor
+            for Place<LinkedList<T, A>>
+        {
+            fn seq(&mut self) -> miniserde::Result<std::boxed::Box<dyn miniserde::de::Seq + '_>> {
+                Ok(std::boxed::Box::new(VecBuilder {
+                    out: &mut self.out,
+                    list: LinkedList::new_in(Default::default()),
+                    element: None,
+                }))
+            }
+        }
+
+        struct VecBuilder<'a, T: 'a, A: Allocator + 'a> {
+            out: &'a mut Option<LinkedList<T, A>>,
+            list: LinkedList<T, A>,
+            element: Option<T>,
+        }
+
+        impl<'a, T, A: Allocator> VecBuilder<'a, T, A> {
+            fn shift(&mut self) {
+                if let Some(e) = self.element.take() {
+                    self.list.push_back(e);
+                }
+            }
+        }
+
+        impl<'a, T: miniserde::Deserialize, A: Allocator + Default> miniserde::de::Seq
+            for VecBuilder<'a, T, A>
+        {
+            fn element(&mut self) -> miniserde::Result<&mut dyn miniserde::de::Visitor> {
+                self.shift();
+                Ok(miniserde::Deserialize::begin(&mut self.element))
+            }
+
+            fn finish(&mut self) -> miniserde::Result<()> {
+                self.shift();
+                *self.out = Some(mem::take(&mut self.list));
+                Ok(())
+            }
+        }
+
+        Place::new(out)
+    }
+}
+
+#[cfg(feature = "nanoserde")]
+mod nanoserde_impls {
+    use super::*;
+
+    impl<T> nanoserde::SerBin for LinkedList<T>
+    where
+        T: nanoserde::SerBin,
+    {
+        fn ser_bin(&self, s: &mut std::vec::Vec<u8>) {
+            let len = self.len();
+            len.ser_bin(s);
+            for item in self.iter() {
+                item.ser_bin(s);
+            }
+        }
+    }
+
+    impl<T> nanoserde::DeBin for LinkedList<T>
+    where
+        T: nanoserde::DeBin,
+    {
+        fn de_bin(o: &mut usize, d: &[u8]) -> Result<LinkedList<T>, nanoserde::DeBinErr> {
+            let len: usize = nanoserde::DeBin::de_bin(o, d)?;
+            let mut out = LinkedList::new();
+            for _ in 0..len {
+                out.push_back(nanoserde::DeBin::de_bin(o, d)?)
+            }
+            Ok(out)
+        }
+    }
+
+    impl<T> nanoserde::SerJson for LinkedList<T>
+    where
+        T: nanoserde::SerJson,
+    {
+        fn ser_json(&self, d: usize, s: &mut nanoserde::SerJsonState) {
+            s.out.push('[');
+            if self.len() > 0 {
+                let last = self.len() - 1;
+                for (index, item) in self.iter().enumerate() {
+                    s.indent(d + 1);
+                    item.ser_json(d + 1, s);
+                    if index != last {
+                        s.out.push(',');
+                    }
+                }
+            }
+            s.out.push(']');
+        }
+    }
+
+    impl<T> nanoserde::DeJson for LinkedList<T>
+    where
+        T: nanoserde::DeJson,
+    {
+        fn de_json(
+            s: &mut nanoserde::DeJsonState,
+            i: &mut std::str::Chars,
+        ) -> Result<LinkedList<T>, nanoserde::DeJsonErr> {
+            let mut out = LinkedList::new();
+            s.block_open(i)?;
+
+            while s.tok != nanoserde::DeJsonTok::BlockClose {
+                out.push_back(nanoserde::DeJson::de_json(s, i)?);
+                s.eat_comma_block(i)?;
+            }
+            s.block_close(i)?;
+            Ok(out)
+        }
+    }
+
+    impl<T> nanoserde::SerRon for LinkedList<T>
+    where
+        T: nanoserde::SerRon,
+    {
+        fn ser_ron(&self, d: usize, s: &mut nanoserde::SerRonState) {
+            s.out.push('[');
+            if self.len() > 0 {
+                let last = self.len() - 1;
+                for (index, item) in self.iter().enumerate() {
+                    s.indent(d + 1);
+                    item.ser_ron(d + 1, s);
+                    if index != last {
+                        s.out.push(',');
+                    }
+                }
+            }
+            s.out.push(']');
+        }
+    }
+
+    impl<T> nanoserde::DeRon for LinkedList<T>
+    where
+        T: nanoserde::DeRon,
+    {
+        fn de_ron(
+            s: &mut nanoserde::DeRonState,
+            i: &mut std::str::Chars,
+        ) -> Result<LinkedList<T>, nanoserde::DeRonErr> {
+            let mut out = LinkedList::new();
+            s.block_open(i)?;
+
+            while s.tok != nanoserde::DeRonTok::BlockClose {
+                out.push_back(nanoserde::DeRon::de_ron(s, i)?);
+                s.eat_comma_block(i)?;
+            }
+            s.block_close(i)?;
+            Ok(out)
+        }
+    }
+}
+
+#[cfg(feature = "borsh")]
+impl<T, A: Allocator + Default> borsh::BorshDeserialize for LinkedList<T, A>
+where
+    T: borsh::BorshDeserialize,
+{
+    #[inline]
+    fn deserialize_reader<R: borsh::io::Read>(reader: &mut R) -> borsh::io::Result<Self> {
+        let vec = <std::vec::Vec<T>>::deserialize_reader(reader)?;
+        Ok(vec.into_iter().collect::<LinkedList<T, A>>())
+    }
+}
+
+#[cfg(feature = "borsh")]
+impl<T, A: Allocator> borsh::BorshSerialize for LinkedList<T, A>
+where
+    T: borsh::BorshSerialize,
+{
+    #[inline]
+    fn serialize<W: borsh::io::Write>(&self, writer: &mut W) -> borsh::io::Result<()> {
+        fn check_zst<T>() -> borsh::io::Result<()> {
+            if core::mem::size_of::<T>() == 0 {
+                return Err(borsh::io::Error::new(
+                    borsh::io::ErrorKind::InvalidData,
+                    borsh::error::ERROR_ZST_FORBIDDEN,
+                ));
+            }
+            Ok(())
+        }
+
+        check_zst::<T>()?;
+
+        writer.write_all(
+            &(u32::try_from(self.len()).map_err(|_| borsh::io::ErrorKind::InvalidData)?)
+                .to_le_bytes(),
+        )?;
+        for item in self {
+            item.serialize(writer)?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::LinkedList;
+
+    use std::vec::Vec;
 
     fn generate_test() -> LinkedList<i32> {
         list_from(&[0, 1, 2, 3, 4, 5, 6])
@@ -1168,7 +1558,8 @@ mod test {
         cursor.move_next();
         cursor.move_prev();
         let tmp = cursor.split_before();
-        assert_eq!(m.into_iter().collect::<Vec<_>>(), &[]);
+        let expected: &[u32] = &[];
+        assert_eq!(m.into_iter().collect::<Vec<u32>>(), expected);
         m = tmp;
         let mut cursor = m.cursor_mut();
         cursor.move_next();
@@ -1196,5 +1587,67 @@ mod test {
         let re_reved: Vec<_> = from_back.into_iter().rev().collect();
 
         assert_eq!(from_front, re_reved);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn test_serialization() {
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = serde_json::to_string(&linked_list).unwrap();
+        let unserialized: LinkedList<bool> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(linked_list, unserialized);
+
+        let bools = vec![true, false, true, true];
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = serde_json::to_string(&linked_list).unwrap();
+        let unserialized: LinkedList<bool> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(linked_list, unserialized);
+    }
+
+    #[cfg(feature = "miniserde")]
+    #[test]
+    fn test_miniserde_serialization() {
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = miniserde::json::to_string(&linked_list);
+        let unserialized: LinkedList<bool> = miniserde::json::from_str(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
+
+        let bools = vec![true, false, true, true];
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = miniserde::json::to_string(&linked_list);
+        let unserialized: LinkedList<bool> = miniserde::json::from_str(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
+    }
+
+    #[cfg(feature = "nanoserde")]
+    #[test]
+    fn test_nanoserde_json_serialization() {
+        use nanoserde::{DeJson, SerJson};
+
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = linked_list.serialize_json();
+        let unserialized: LinkedList<bool> = LinkedList::deserialize_json(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
+
+        let bools = vec![true, false, true, true];
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = linked_list.serialize_json();
+        let unserialized: LinkedList<bool> = LinkedList::deserialize_json(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
+    }
+
+    #[cfg(feature = "borsh")]
+    #[test]
+    fn test_borsh_serialization() {
+        let linked_list: LinkedList<bool> = LinkedList::new();
+        let serialized = borsh::to_vec(&linked_list).unwrap();
+        let unserialized: LinkedList<bool> = borsh::from_slice(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
+
+        let bools = vec![true, false, true, true];
+        let linked_list: LinkedList<bool> = bools.iter().map(|n| *n).collect();
+        let serialized = borsh::to_vec(&linked_list).unwrap();
+        let unserialized: LinkedList<bool> = borsh::from_slice(&serialized[..]).unwrap();
+        assert_eq!(linked_list, unserialized);
     }
 }
