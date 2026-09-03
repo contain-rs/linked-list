@@ -8,7 +8,7 @@
 [![crates.io][crates.io shield]][crates.io link]
 [![Documentation][docs.rs badge]][docs.rs link]
 ![Rust CI][github ci badge]
-![Minimum Supported Rustc Version][rustc 1.67+]
+![Minimum Supported Rustc Version][rustc 1.85+]
 <br />
 <br />
 [![Dependency Status][deps.rs status]][deps.rs link]
@@ -22,7 +22,7 @@
 [docs.rs badge]: https://docs.rs/linked-list/badge.svg?version=0.1.0
 [docs.rs link]: https://docs.rs/linked-list/0.1.0/linked_list/
 [github ci badge]: https://github.com/contain-rs/linked-list/workflows/Rust/badge.svg?branch=master
-[rustc 1.67+]: https://img.shields.io/badge/rustc-1.67%2B-blue.svg
+[rustc 1.85+]: https://img.shields.io/badge/rustc-1.85%2B-blue.svg
 [deps.rs status]: https://deps.rs/crate/linked-list/0.1.0/status.svg
 [deps.rs link]: https://deps.rs/crate/linked-list/0.1.0
 [shields.io download count]: https://img.shields.io/crates/d/linked-list.svg
@@ -36,12 +36,7 @@ Add this to your Cargo.toml:
 linked-list = "0.1"
 ```
 
-Since Rust 2018, `extern crate` is no longer mandatory. If your edition is old (Rust 2015),
-add this to your crate root:
-
-```rust
-extern crate linked_list;
-```
+Since Rust 2018, `extern crate` is no longer mandatory.
 
 If you want [serde](https://github.com/serde-rs/serde) support, include the feature like this:
 
