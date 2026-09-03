@@ -233,7 +233,7 @@ impl<T, A: Allocator> LinkedList<T, A> {
         while self.pop_front().is_some() {}
     }
 
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             front: self.front,
             back: self.back,
@@ -242,7 +242,7 @@ impl<T, A: Allocator> LinkedList<T, A> {
         }
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<T> {
+    pub fn iter_mut(&mut self) -> IterMut<'_, T> {
         IterMut {
             front: self.front,
             back: self.back,
@@ -251,7 +251,7 @@ impl<T, A: Allocator> LinkedList<T, A> {
         }
     }
 
-    pub fn cursor_mut(&mut self) -> CursorMut<T, A> {
+    pub fn cursor_mut(&mut self) -> CursorMut<'_, T, A> {
         CursorMut {
             list: self,
             cur: None,
@@ -964,7 +964,7 @@ where
 
 #[cfg(feature = "miniserde")]
 impl<T: miniserde::Serialize, A: Allocator> miniserde::Serialize for LinkedList<T, A> {
-    fn begin(&self) -> miniserde::ser::Fragment {
+    fn begin(&self) -> miniserde::ser::Fragment<'_> {
         struct Stream<'a, T: 'a>(Iter<'a, T>);
 
         impl<'a, T: miniserde::Serialize> miniserde::ser::Seq for Stream<'a, T> {
