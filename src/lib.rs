@@ -606,7 +606,7 @@ impl<'a, T, A: Allocator> CursorMut<'a, T, A> {
                 if let Some(prev) = prev {
                     (*cur.as_ptr()).front = None;
                     (*prev.as_ptr()).back = None;
-                    output_front = self.list.front
+                    output_front = self.list.front;
                 }
 
                 // Produce the result:
