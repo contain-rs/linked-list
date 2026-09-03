@@ -4,6 +4,8 @@
 
 #![no_std]
 
+extern crate alloc;
+
 #[cfg(any(test, feature = "std"))]
 #[cfg_attr(test, macro_use)]
 extern crate std;
@@ -1147,7 +1149,7 @@ where
 {
     #[inline]
     fn deserialize_reader<R: borsh::io::Read>(reader: &mut R) -> borsh::io::Result<Self> {
-        let vec = <std::vec::Vec<T>>::deserialize_reader(reader)?;
+        let vec = <alloc::vec::Vec<T>>::deserialize_reader(reader)?;
         Ok(vec.into_iter().collect::<LinkedList<T, A>>())
     }
 }
