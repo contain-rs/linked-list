@@ -10,7 +10,7 @@ authors = [
     "Peter Blackson <pioczarn@gmail.com>",
 ]
 
-edition = "2021"
+edition = "2024"
 rust-version = "1.85"
 
 repository = "https://github.com/contain-rs/linked-list"
@@ -20,7 +20,7 @@ keywords = ["data-structures"]
 readme = "README.md"
 
 [dependencies]
-allocator-api2 = "0.2.20"
+allocator-api2 = "0.4"
 serde = { version = "1.0", default-features = false, features = ["derive", "alloc"], optional = true }
 borsh = { version = "1.8", default-features = false, features = ["derive"], optional = true }
 miniserde = { version = "0.1", optional = true }
