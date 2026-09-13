@@ -19,12 +19,12 @@
 
 [crates.io shield]: https://img.shields.io/crates/v/linked-list?label=latest
 [crates.io link]: https://crates.io/crates/linked-list
-[docs.rs badge]: https://docs.rs/linked-list/badge.svg?version=0.1.0
-[docs.rs link]: https://docs.rs/linked-list/0.1.0/linked_list/
+[docs.rs badge]: https://docs.rs/linked-list/badge.svg?version=0.2.0
+[docs.rs link]: https://docs.rs/linked-list/0.2.0/linked_list/
 [github ci badge]: https://github.com/contain-rs/linked-list/workflows/Rust/badge.svg?branch=master
 [rustc 1.85+]: https://img.shields.io/badge/rustc-1.85%2B-blue.svg
-[deps.rs status]: https://deps.rs/crate/linked-list/0.1.0/status.svg
-[deps.rs link]: https://deps.rs/crate/linked-list/0.1.0
+[deps.rs status]: https://deps.rs/crate/linked-list/0.2.0/status.svg
+[deps.rs link]: https://deps.rs/crate/linked-list/0.2.0
 [shields.io download count]: https://img.shields.io/crates/d/linked-list.svg
 
 ## Usage
