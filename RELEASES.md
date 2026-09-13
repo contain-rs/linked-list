@@ -1,10 +1,16 @@
-Version 0.2.0 (TO BE RELEASED)
+Version 0.3.0 (TO BE RELEASED)
+==========================
+
+<a id="v0.3.0"></a>
+
+Version 0.2.0 (2026-09-13)
 ==========================
 
 <a id="v0.2.0"></a>
 
 - MSRV is bumped to ver1.85
 - a "success" condition CI job is added
+- `split_before` and `split_after` edge case is fixed
 
 Version 0.1.0 (2024-12-02)
 ==========================
